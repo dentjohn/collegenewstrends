@@ -871,40 +871,31 @@ function loadScript(src) {
 function parseIntelText(text, filename) {
   pendingIntelItems = [];
 
-  // Split on common separators: ---, ***, ===, blank lines between numbered items
-  const chunks = text.split(/
-(?:---+|\*\*\*+|===+)
-|
-
-(?=\d+[\.\)]|
-)/g)
-    .map(c => c.trim()).filter(c => c.length > 40);
-
-  // If splitting didn't work well, try splitting on double newlines
-  const blocks = chunks.length >= 2 ? chunks : text.split(/
-
-+/).map(c => c.trim()).filter(c => c.length > 40);
+  // Split on --- or === separators, or double newlines
+  let blocks = text.split(/\n[ \t]*(?:---+|===+)[ \t]*\n/).map(c => c.trim()).filter(c => c.length > 40);
+  if (blocks.length < 2) {
+    blocks = text.split(/\n{2,}/).map(c => c.trim()).filter(c => c.length > 40);
+  }
 
   blocks.forEach(block => {
     const item = parseIntelBlock(block);
     if (item) pendingIntelItems.push(item);
   });
 
-  // Show college selector
+  // Populate college selector
   const sel = document.getElementById('importCollegeName');
   sel.innerHTML = '<option value="">— select a tracked college —</option>' +
-    state.colleges.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+    state.colleges.map(c => '<option value="' + c.name + '">' + c.name + '</option>').join('');
   document.getElementById('importCollegeSelect').style.display = '';
 
-  // Show preview
   if (pendingIntelItems.length > 0) {
     document.getElementById('importPreviewList').innerHTML =
-      pendingIntelItems.map((it, i) =>
-        `<div style="margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border);">
-          <strong style="color:var(--text);">${i+1}. ${it.headline}</strong><br>
-          <span style="color:var(--text3);">${it.summary.slice(0, 100)}${it.summary.length>100?'…':''}</span>
-        </div>`
-      ).join('');
+      pendingIntelItems.map(function(it, i) {
+        return '<div style="margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border);">' +
+          '<strong style="color:var(--text);">' + (i+1) + '. ' + it.headline + '</strong><br>' +
+          '<span style="color:var(--text3);">' + it.summary.slice(0, 100) + (it.summary.length > 100 ? '…' : '') + '</span>' +
+          '</div>';
+      }).join('');
     document.getElementById('importPreviewCount').textContent =
       pendingIntelItems.length + ' item' + (pendingIntelItems.length !== 1 ? 's' : '') + ' parsed from ' + filename;
     document.getElementById('importPreview').style.display = '';
@@ -912,48 +903,43 @@ function parseIntelText(text, filename) {
     document.getElementById('importStatus').textContent = '';
   } else {
     document.getElementById('importStatus').textContent =
-      'Could not parse structured items. Make sure each item is separated by --- or a blank line.';
+      'Could not parse items. Make sure each item is separated by --- on its own line.';
     document.getElementById('intelImportBtn').style.display = 'none';
   }
 }
 
 function parseIntelBlock(block) {
-  // Extract headline: first line, or line starting with "Headline:", "Title:", "#"
-  const lines = block.split('
-').map(l => l.trim()).filter(Boolean);
+  var lines = block.split('\n').map(function(l) { return l.trim(); }).filter(Boolean);
   if (!lines.length) return null;
 
-  let headline = '';
-  let summary  = '';
-  let sentiment = 'neutral';
-  let category  = 'General';
-  let sources   = [];
+  var headline = '';
+  var summary  = '';
+  var sentiment = 'neutral';
+  var category  = 'General';
+  var sources   = [];
 
-  lines.forEach(line => {
-    const lower = line.toLowerCase();
-    if (/^(headline|title|#)\s*[:：]?\s*/i.test(line)) {
-      headline = line.replace(/^(headline|title|#)\s*[:：]?\s*/i, '').trim();
-    } else if (/^(summary|detail|description|body)\s*[:：]\s*/i.test(line)) {
-      summary = line.replace(/^(summary|detail|description|body)\s*[:：]\s*/i, '').trim();
-    } else if (/^(sentiment|tone|signal)\s*[:：]\s*/i.test(line)) {
-      const val = line.replace(/^(sentiment|tone|signal)\s*[:：]\s*/i, '').trim().toLowerCase();
-      if (val.includes('pos')) sentiment = 'positive';
-      else if (val.includes('neg')) sentiment = 'negative';
+  lines.forEach(function(line) {
+    if (/^(headline|title|#)\s*[:]\s*/i.test(line)) {
+      headline = line.replace(/^(headline|title|#)\s*[:]\s*/i, '').trim();
+    } else if (/^(summary|detail|description|body)\s*[:]\s*/i.test(line)) {
+      summary = line.replace(/^(summary|detail|description|body)\s*[:]\s*/i, '').trim();
+    } else if (/^(sentiment|tone|signal)\s*[:]\s*/i.test(line)) {
+      var val = line.replace(/^(sentiment|tone|signal)\s*[:]\s*/i, '').trim().toLowerCase();
+      if (val.indexOf('pos') !== -1) sentiment = 'positive';
+      else if (val.indexOf('neg') !== -1) sentiment = 'negative';
       else sentiment = 'neutral';
-    } else if (/^(category|type|area)\s*[:：]\s*/i.test(line)) {
-      category = line.replace(/^(category|type|area)\s*[:：]\s*/i, '').trim();
-    } else if (/^(source|sources|via|from)\s*[:：]\s*/i.test(line)) {
-      sources = [line.replace(/^(source|sources|via|from)\s*[:：]\s*/i, '').trim()];
+    } else if (/^(category|type|area)\s*[:]\s*/i.test(line)) {
+      category = line.replace(/^(category|type|area)\s*[:]\s*/i, '').trim();
+    } else if (/^(source|sources|via|from)\s*[:]\s*/i.test(line)) {
+      sources = [line.replace(/^(source|sources|via|from)\s*[:]\s*/i, '').trim()];
     }
   });
 
-  // Fallback: use first line as headline, rest as summary
   if (!headline) headline = lines[0].replace(/^#+\s*/, '').slice(0, 80);
   if (!summary)  summary  = lines.slice(1).join(' ').slice(0, 400) || block.slice(0, 300);
 
   if (headline.length < 5) return null;
-
-  return { headline, summary, sentiment, category, sources, confidence: 'medium', date: 'Imported' };
+  return { headline: headline, summary: summary, sentiment: sentiment, category: category, sources: sources, confidence: 'medium', date: 'Imported' };
 }
 
 function importIntelItems() {
