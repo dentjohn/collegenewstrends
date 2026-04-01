@@ -406,14 +406,19 @@ async function save() {
 
 async function load() {
   try {
-    const res = await fetch('/api/db');
-    if (!res.ok) return;
+    // 8-second timeout so the UI never hangs on a slow/failed Blobs call
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch('/api/db', { signal: controller.signal });
+    clearTimeout(timeout);
+    if (!res.ok) { console.warn('DB load returned', res.status); return; }
     const data = await res.json();
-    state.colleges = data.colleges || [];
-    state.items    = data.items    || [];
+    state.colleges    = data.colleges    || [];
+    state.items       = data.items       || [];
     state.lastUpdated = data.lastUpdated || null;
   } catch(e) {
-    console.error('Load error:', e);
+    // AbortError = timeout; TypeError = network failure. Both are non-fatal.
+    console.warn('Load skipped:', e.message);
   }
 }
 
@@ -855,22 +860,20 @@ async function fetchIntel(collegeName, collegeState) {
 
 // ── INIT ──────────────────────────────────────────────────
 async function init() {
-  // Show loading state while we fetch from server
   document.getElementById('feedContainer').innerHTML = `<div class="loading-state">
     <div class="spinner"></div>
     <div class="loading-text">Loading saved data...</div>
   </div>`;
 
-  await load();
+  await load();  // has its own 8s timeout — will never block forever
 
-  // Seed default colleges if this is a fresh install
   if (state.colleges.length === 0) {
     state.colleges = [
-      { name: 'Skidmore College',        state: 'New York',       addedAt: new Date().toISOString() },
-      { name: 'University of Rochester', state: 'New York',       addedAt: new Date().toISOString() },
-      { name: 'Clark University',        state: 'Massachusetts',  addedAt: new Date().toISOString() },
-      { name: 'University of Richmond',  state: 'Virginia',       addedAt: new Date().toISOString() },
-      { name: 'Northeastern University', state: 'Massachusetts',  addedAt: new Date().toISOString() },
+      { name: 'Skidmore College',        state: 'New York',      addedAt: new Date().toISOString() },
+      { name: 'University of Rochester', state: 'New York',      addedAt: new Date().toISOString() },
+      { name: 'Clark University',        state: 'Massachusetts', addedAt: new Date().toISOString() },
+      { name: 'University of Richmond',  state: 'Virginia',      addedAt: new Date().toISOString() },
+      { name: 'Northeastern University', state: 'Massachusetts', addedAt: new Date().toISOString() },
     ];
     await save();
   }
