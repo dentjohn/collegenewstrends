@@ -177,6 +177,16 @@
   ::-webkit-scrollbar{width:4px;}
   ::-webkit-scrollbar-track{background:transparent;}
   ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+
+  .add-tab{flex:1;padding:6px;border-radius:5px;font-size:12px;font-weight:500;cursor:pointer;
+    color:var(--text3);border:none;background:none;font-family:'DM Sans',sans-serif;transition:all 0.15s;}
+  .add-tab:hover{color:var(--text2);}
+  .add-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.3);}
+  .suggestion-item{padding:9px 12px;font-size:13px;cursor:pointer;color:var(--text2);
+    border-bottom:1px solid var(--border);transition:background 0.1s;}
+  .suggestion-item:last-child{border-bottom:none;}
+  .suggestion-item:hover{background:var(--border);color:var(--text);}
+  .suggestion-item .sug-state{font-size:11px;color:var(--text3);margin-left:6px;}
 </style>
 </head>
 <body>
@@ -328,15 +338,59 @@
 
 <!-- ADD COLLEGE MODAL -->
 <div class="modal-overlay" id="modal-addCollege">
-  <div class="modal">
-    <div class="modal-title">Track a College</div>
-    <div class="modal-label">College Name</div>
-    <input class="modal-input" id="collegeNameInput" type="text" placeholder="e.g. Skidmore College" onkeydown="if(event.key==='Enter')addCollege()">
-    <div class="modal-label">State (optional)</div>
-    <input class="modal-input" id="collegeStateInput" type="text" placeholder="e.g. New York">
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('addCollege')">Cancel</button>
-      <button class="btn btn-primary" onclick="addCollege()">Add College</button>
+  <div class="modal" style="width:520px;">
+    <div class="modal-title">Add Colleges</div>
+
+    <!-- Tab switcher -->
+    <div style="display:flex;gap:2px;background:var(--surface2);border-radius:7px;padding:3px;margin-bottom:1.4rem;">
+      <button class="add-tab active" id="addTab-search" onclick="switchAddTab('search')">🔍 Search by Name</button>
+      <button class="add-tab" id="addTab-csv" onclick="switchAddTab('csv')">📄 Upload CSV</button>
+    </div>
+
+    <!-- SEARCH TAB -->
+    <div id="addPanel-search">
+      <div class="modal-label">College Name</div>
+      <div style="display:flex;gap:8px;margin-bottom:0.8rem;">
+        <input class="modal-input" id="collegeNameInput" type="text"
+               placeholder="e.g. Skidmore College"
+               oninput="searchColleges(this.value)"
+               onkeydown="if(event.key==='Enter')addCollegeFromSearch()"
+               style="margin-bottom:0;flex:1;">
+        <button class="btn btn-primary" onclick="addCollegeFromSearch()">Add</button>
+      </div>
+      <!-- Suggestions dropdown -->
+      <div id="collegeSuggestions" style="display:none;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;max-height:200px;overflow-y:auto;margin-bottom:0.8rem;"></div>
+      <div id="searchStatus" style="font-size:11px;color:var(--text3);min-height:16px;"></div>
+    </div>
+
+    <!-- CSV TAB -->
+    <div id="addPanel-csv" style="display:none;">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:1rem;line-height:1.6;">
+        Upload a CSV file with college names. The file should have a column named
+        <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;">name</code> or
+        <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;">college</code>
+        (or just put one college per line with no header).
+      </p>
+      <div id="csvDropZone" style="border:2px dashed var(--border2);border-radius:8px;padding:2rem;text-align:center;cursor:pointer;transition:border-color 0.15s;margin-bottom:1rem;"
+           onclick="document.getElementById('csvFileInput').click()"
+           ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+           ondragleave="this.style.borderColor='var(--border2)'"
+           ondrop="handleCsvDrop(event)">
+        <div style="font-size:28px;margin-bottom:8px;">📄</div>
+        <div style="font-size:13px;color:var(--text2);">Drop CSV here or <span style="color:var(--accent);">click to browse</span></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Accepts .csv or .txt files</div>
+      </div>
+      <input type="file" id="csvFileInput" accept=".csv,.txt" style="display:none;" onchange="handleCsvFile(this.files[0])">
+      <div id="csvPreview" style="display:none;">
+        <div style="font-size:11px;color:var(--text3);font-weight:600;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:6px;">Preview</div>
+        <div id="csvPreviewList" style="background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:0.8rem;max-height:160px;overflow-y:auto;font-size:12px;color:var(--text2);line-height:1.8;"></div>
+        <div id="csvPreviewCount" style="font-size:11px;color:var(--text3);margin-top:6px;"></div>
+      </div>
+    </div>
+
+    <div class="modal-footer" style="margin-top:1.2rem;">
+      <button class="btn btn-ghost" onclick="closeModal('addCollege')">Close</button>
+      <button class="btn btn-primary" id="csvImportBtn" onclick="importFromCsv()" style="display:none;">Import All</button>
     </div>
   </div>
 </div>
@@ -438,20 +492,335 @@ function switchView(id, btn) {
 }
 
 // ── ADD COLLEGE ───────────────────────────────────────────
-function addCollege() {
-  const name = document.getElementById('collegeNameInput').value.trim();
-  const st   = document.getElementById('collegeStateInput').value.trim();
-  if (!name) return;
-  if (state.colleges.find(c => c.name.toLowerCase() === name.toLowerCase())) {
-    closeModal('addCollege'); return;
+// ── ADD COLLEGE (search + CSV) ────────────────────────────
+
+// Known US colleges list for autocomplete (top ~300)
+const COLLEGE_LIST = [
+  {name:"Amherst College",state:"Massachusetts"},
+  {name:"Auburn University",state:"Alabama"},
+  {name:"Babson College",state:"Massachusetts"},
+  {name:"Barnard College",state:"New York"},
+  {name:"Bates College",state:"Maine"},
+  {name:"Baylor University",state:"Texas"},
+  {name:"Bennington College",state:"Vermont"},
+  {name:"Boston College",state:"Massachusetts"},
+  {name:"Boston University",state:"Massachusetts"},
+  {name:"Bowdoin College",state:"Maine"},
+  {name:"Brandeis University",state:"Massachusetts"},
+  {name:"Brown University",state:"Rhode Island"},
+  {name:"Bryn Mawr College",state:"Pennsylvania"},
+  {name:"Bucknell University",state:"Pennsylvania"},
+  {name:"California Institute of Technology",state:"California"},
+  {name:"Carnegie Mellon University",state:"Pennsylvania"},
+  {name:"Case Western Reserve University",state:"Ohio"},
+  {name:"Claremont McKenna College",state:"California"},
+  {name:"Clark University",state:"Massachusetts"},
+  {name:"Colby College",state:"Maine"},
+  {name:"Colgate University",state:"New York"},
+  {name:"College of the Holy Cross",state:"Massachusetts"},
+  {name:"College of William & Mary",state:"Virginia"},
+  {name:"Colorado College",state:"Colorado"},
+  {name:"Columbia University",state:"New York"},
+  {name:"Connecticut College",state:"Connecticut"},
+  {name:"Cornell University",state:"New York"},
+  {name:"Dartmouth College",state:"New Hampshire"},
+  {name:"Davidson College",state:"North Carolina"},
+  {name:"Denison University",state:"Ohio"},
+  {name:"DePauw University",state:"Indiana"},
+  {name:"Dickinson College",state:"Pennsylvania"},
+  {name:"Drew University",state:"New Jersey"},
+  {name:"Drexel University",state:"Pennsylvania"},
+  {name:"Duke University",state:"North Carolina"},
+  {name:"Elon University",state:"North Carolina"},
+  {name:"Emerson College",state:"Massachusetts"},
+  {name:"Emory University",state:"Georgia"},
+  {name:"Fairfield University",state:"Connecticut"},
+  {name:"Florida State University",state:"Florida"},
+  {name:"Fordham University",state:"New York"},
+  {name:"Franklin & Marshall College",state:"Pennsylvania"},
+  {name:"Furman University",state:"South Carolina"},
+  {name:"George Washington University",state:"District of Columbia"},
+  {name:"Georgetown University",state:"District of Columbia"},
+  {name:"Georgia Institute of Technology",state:"Georgia"},
+  {name:"Gettysburg College",state:"Pennsylvania"},
+  {name:"Gonzaga University",state:"Washington"},
+  {name:"Grinnell College",state:"Iowa"},
+  {name:"Hamilton College",state:"New York"},
+  {name:"Hampshire College",state:"Massachusetts"},
+  {name:"Harvard University",state:"Massachusetts"},
+  {name:"Harvey Mudd College",state:"California"},
+  {name:"Haverford College",state:"Pennsylvania"},
+  {name:"High Point University",state:"North Carolina"},
+  {name:"Hobart and William Smith Colleges",state:"New York"},
+  {name:"Hofstra University",state:"New York"},
+  {name:"Howard University",state:"District of Columbia"},
+  {name:"Indiana University Bloomington",state:"Indiana"},
+  {name:"Ithaca College",state:"New York"},
+  {name:"Johns Hopkins University",state:"Maryland"},
+  {name:"Juniata College",state:"Pennsylvania"},
+  {name:"Kalamazoo College",state:"Michigan"},
+  {name:"Kenyon College",state:"Ohio"},
+  {name:"Lafayette College",state:"Pennsylvania"},
+  {name:"Lawrence University",state:"Wisconsin"},
+  {name:"Lehigh University",state:"Pennsylvania"},
+  {name:"Lewis & Clark College",state:"Oregon"},
+  {name:"Loyola Marymount University",state:"California"},
+  {name:"Loyola University Chicago",state:"Illinois"},
+  {name:"Loyola University Maryland",state:"Maryland"},
+  {name:"Macalester College",state:"Minnesota"},
+  {name:"Manhattan College",state:"New York"},
+  {name:"Marist College",state:"New York"},
+  {name:"Massachusetts Institute of Technology",state:"Massachusetts"},
+  {name:"Miami University",state:"Ohio"},
+  {name:"Michigan State University",state:"Michigan"},
+  {name:"Middlebury College",state:"Vermont"},
+  {name:"Mount Holyoke College",state:"Massachusetts"},
+  {name:"Muhlenberg College",state:"Pennsylvania"},
+  {name:"New York University",state:"New York"},
+  {name:"Northeastern University",state:"Massachusetts"},
+  {name:"Northwestern University",state:"Illinois"},
+  {name:"Oberlin College",state:"Ohio"},
+  {name:"Occidental College",state:"California"},
+  {name:"Ohio State University",state:"Ohio"},
+  {name:"Ohio Wesleyan University",state:"Ohio"},
+  {name:"Penn State University",state:"Pennsylvania"},
+  {name:"Pepperdine University",state:"California"},
+  {name:"Pitzer College",state:"California"},
+  {name:"Pomona College",state:"California"},
+  {name:"Princeton University",state:"New Jersey"},
+  {name:"Providence College",state:"Rhode Island"},
+  {name:"Purdue University",state:"Indiana"},
+  {name:"Reed College",state:"Oregon"},
+  {name:"Rensselaer Polytechnic Institute",state:"New York"},
+  {name:"Rhode Island School of Design",state:"Rhode Island"},
+  {name:"Rhodes College",state:"Tennessee"},
+  {name:"Rice University",state:"Texas"},
+  {name:"Rochester Institute of Technology",state:"New York"},
+  {name:"Rollins College",state:"Florida"},
+  {name:"Rose-Hulman Institute of Technology",state:"Indiana"},
+  {name:"Rutgers University",state:"New Jersey"},
+  {name:"Saint Louis University",state:"Missouri"},
+  {name:"Santa Clara University",state:"California"},
+  {name:"Sarah Lawrence College",state:"New York"},
+  {name:"Scripps College",state:"California"},
+  {name:"Sewanee: The University of the South",state:"Tennessee"},
+  {name:"Siena College",state:"New York"},
+  {name:"Skidmore College",state:"New York"},
+  {name:"Smith College",state:"Massachusetts"},
+  {name:"Southern Methodist University",state:"Texas"},
+  {name:"Spelman College",state:"Georgia"},
+  {name:"St. John's University",state:"New York"},
+  {name:"St. Lawrence University",state:"New York"},
+  {name:"St. Michael's College",state:"Vermont"},
+  {name:"St. Olaf College",state:"Minnesota"},
+  {name:"Stanford University",state:"California"},
+  {name:"Stetson University",state:"Florida"},
+  {name:"Stevens Institute of Technology",state:"New Jersey"},
+  {name:"Stonehill College",state:"Massachusetts"},
+  {name:"Stony Brook University",state:"New York"},
+  {name:"Suffolk University",state:"Massachusetts"},
+  {name:"Swarthmore College",state:"Pennsylvania"},
+  {name:"Syracuse University",state:"New York"},
+  {name:"Temple University",state:"Pennsylvania"},
+  {name:"Texas A&M University",state:"Texas"},
+  {name:"Texas Christian University",state:"Texas"},
+  {name:"The College of New Jersey",state:"New Jersey"},
+  {name:"Trinity College",state:"Connecticut"},
+  {name:"Trinity University",state:"Texas"},
+  {name:"Tufts University",state:"Massachusetts"},
+  {name:"Tulane University",state:"Louisiana"},
+  {name:"Union College",state:"New York"},
+  {name:"United States Military Academy",state:"New York"},
+  {name:"United States Naval Academy",state:"Maryland"},
+  {name:"University of Alabama",state:"Alabama"},
+  {name:"University of Arizona",state:"Arizona"},
+  {name:"University of California Berkeley",state:"California"},
+  {name:"University of California Davis",state:"California"},
+  {name:"University of California Irvine",state:"California"},
+  {name:"University of California Los Angeles",state:"California"},
+  {name:"University of California San Diego",state:"California"},
+  {name:"University of California Santa Barbara",state:"California"},
+  {name:"University of California Santa Cruz",state:"California"},
+  {name:"University of Chicago",state:"Illinois"},
+  {name:"University of Colorado Boulder",state:"Colorado"},
+  {name:"University of Connecticut",state:"Connecticut"},
+  {name:"University of Dallas",state:"Texas"},
+  {name:"University of Delaware",state:"Delaware"},
+  {name:"University of Denver",state:"Colorado"},
+  {name:"University of Florida",state:"Florida"},
+  {name:"University of Georgia",state:"Georgia"},
+  {name:"University of Illinois Urbana-Champaign",state:"Illinois"},
+  {name:"University of Iowa",state:"Iowa"},
+  {name:"University of Kansas",state:"Kansas"},
+  {name:"University of Kentucky",state:"Kentucky"},
+  {name:"University of Maryland",state:"Maryland"},
+  {name:"University of Massachusetts Amherst",state:"Massachusetts"},
+  {name:"University of Miami",state:"Florida"},
+  {name:"University of Michigan",state:"Michigan"},
+  {name:"University of Minnesota",state:"Minnesota"},
+  {name:"University of Mississippi",state:"Mississippi"},
+  {name:"University of Missouri",state:"Missouri"},
+  {name:"University of New Hampshire",state:"New Hampshire"},
+  {name:"University of North Carolina Chapel Hill",state:"North Carolina"},
+  {name:"University of Notre Dame",state:"Indiana"},
+  {name:"University of Oregon",state:"Oregon"},
+  {name:"University of Pennsylvania",state:"Pennsylvania"},
+  {name:"University of Pittsburgh",state:"Pennsylvania"},
+  {name:"University of Puget Sound",state:"Washington"},
+  {name:"University of Rhode Island",state:"Rhode Island"},
+  {name:"University of Richmond",state:"Virginia"},
+  {name:"University of Rochester",state:"New York"},
+  {name:"University of San Diego",state:"California"},
+  {name:"University of San Francisco",state:"California"},
+  {name:"University of South Carolina",state:"South Carolina"},
+  {name:"University of Southern California",state:"California"},
+  {name:"University of Tennessee",state:"Tennessee"},
+  {name:"University of Texas at Austin",state:"Texas"},
+  {name:"University of Utah",state:"Utah"},
+  {name:"University of Vermont",state:"Vermont"},
+  {name:"University of Virginia",state:"Virginia"},
+  {name:"University of Washington",state:"Washington"},
+  {name:"University of Wisconsin Madison",state:"Wisconsin"},
+  {name:"Ursinus College",state:"Pennsylvania"},
+  {name:"Vanderbilt University",state:"Tennessee"},
+  {name:"Vassar College",state:"New York"},
+  {name:"Villanova University",state:"Pennsylvania"},
+  {name:"Virginia Tech",state:"Virginia"},
+  {name:"Wake Forest University",state:"North Carolina"},
+  {name:"Washington & Jefferson College",state:"Pennsylvania"},
+  {name:"Washington and Lee University",state:"Virginia"},
+  {name:"Washington University in St. Louis",state:"Missouri"},
+  {name:"Wellesley College",state:"Massachusetts"},
+  {name:"Wesleyan University",state:"Connecticut"},
+  {name:"Wheaton College",state:"Massachusetts"},
+  {name:"Whitman College",state:"Washington"},
+  {name:"William & Mary",state:"Virginia"},
+  {name:"Williams College",state:"Massachusetts"},
+  {name:"Worcester Polytechnic Institute",state:"Massachusetts"},
+  {name:"Xavier University",state:"Ohio"},
+  {name:"Yale University",state:"Connecticut"},
+];
+
+let pendingCsvColleges = [];
+
+function switchAddTab(tab) {
+  document.querySelectorAll('.add-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('addTab-'+tab).classList.add('active');
+  document.getElementById('addPanel-search').style.display = tab === 'search' ? '' : 'none';
+  document.getElementById('addPanel-csv').style.display   = tab === 'csv'    ? '' : 'none';
+  document.getElementById('csvImportBtn').style.display   = tab === 'csv' && pendingCsvColleges.length ? '' : 'none';
+}
+
+function searchColleges(query) {
+  const box  = document.getElementById('collegeSuggestions');
+  const stat = document.getElementById('searchStatus');
+  query = query.trim();
+  if (query.length < 2) { box.style.display = 'none'; stat.textContent = ''; return; }
+  const q = query.toLowerCase();
+  const matches = COLLEGE_LIST.filter(c => c.name.toLowerCase().includes(q)).slice(0, 8);
+  if (!matches.length) {
+    box.style.display = 'none';
+    stat.textContent = 'No matches — you can still add it manually by pressing Add.';
+    return;
   }
-  state.colleges.push({ name, state: st, addedAt: new Date().toISOString() });
-  save();
-  closeModal('addCollege');
+  stat.textContent = '';
+  box.innerHTML = matches.map(c =>
+    `<div class="suggestion-item" onclick="selectSuggestion('${c.name.replace(/'/g,"\\'")}','${c.state.replace(/'/g,"\\'")}')">
+      ${c.name}<span class="sug-state">${c.state}</span>
+    </div>`
+  ).join('');
+  box.style.display = '';
+}
+
+function selectSuggestion(name, state) {
+  document.getElementById('collegeNameInput').value = name;
+  document.getElementById('collegeSuggestions').style.display = 'none';
+  document.getElementById('searchStatus').textContent = state ? '📍 ' + state : '';
+  addCollegeByName(name, state);
+}
+
+function addCollegeFromSearch() {
+  const name = document.getElementById('collegeNameInput').value.trim();
+  if (!name) return;
+  const match = COLLEGE_LIST.find(c => c.name.toLowerCase() === name.toLowerCase());
+  addCollegeByName(match ? match.name : name, match ? match.state : '');
+}
+
+function addCollegeByName(name, collegeSt) {
+  document.getElementById('collegeSuggestions').style.display = 'none';
+  if (state.colleges.find(c => c.name.toLowerCase() === name.toLowerCase())) {
+    showToast(name + ' is already on your watchlist', '⚠️'); return;
+  }
+  state.colleges.push({ name, state: collegeSt, addedAt: new Date().toISOString() });
+  save(); renderSidebar(); renderStats();
+  showToast(name + ' added', '🎓');
   document.getElementById('collegeNameInput').value = '';
-  document.getElementById('collegeStateInput').value = '';
-  renderSidebar(); renderStats();
-  showToast(name + ' added to watchlist', '🎓');
+  document.getElementById('searchStatus').textContent = '';
+}
+
+// CSV handling
+function handleCsvDrop(event) {
+  event.preventDefault();
+  document.getElementById('csvDropZone').style.borderColor = 'var(--border2)';
+  const file = event.dataTransfer.files[0];
+  if (file) handleCsvFile(file);
+}
+
+function handleCsvFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => parseCsv(e.target.result);
+  reader.readAsText(file);
+}
+
+function parseCsv(text) {
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  if (!lines.length) return;
+
+  let nameCol = -1;
+  let stateCol = -1;
+  let dataStart = 0;
+  const firstLine = lines[0].toLowerCase().split(',').map(h => h.replace(/"/g,'').trim());
+
+  // Try to detect header row
+  const nameIdx   = firstLine.findIndex(h => ['name','college','institution','school'].includes(h));
+  const stateIdx  = firstLine.findIndex(h => ['state','st','location'].includes(h));
+  if (nameIdx !== -1) { nameCol = nameIdx; stateCol = stateIdx; dataStart = 1; }
+
+  pendingCsvColleges = [];
+  for (let i = dataStart; i < lines.length; i++) {
+    const cols = lines[i].split(',').map(c => c.replace(/"/g,'').trim());
+    const name  = nameCol  >= 0 ? cols[nameCol]  : cols[0];
+    const state = stateCol >= 0 ? cols[stateCol] : (cols[1] || '');
+    if (name && name.length > 1) pendingCsvColleges.push({ name, state });
+  }
+
+  // Show preview
+  const alreadyHave = pendingCsvColleges.filter(c =>
+    state.colleges.find(e => e.name.toLowerCase() === c.name.toLowerCase())
+  ).length;
+  const newCount = pendingCsvColleges.length - alreadyHave;
+
+  document.getElementById('csvPreviewList').innerHTML =
+    pendingCsvColleges.map(c => `<div>• ${c.name}${c.state ? ' <span style="color:var(--text3);">— '+c.state+'</span>' : ''}</div>`).join('');
+  document.getElementById('csvPreviewCount').textContent =
+    pendingCsvColleges.length + ' colleges found · ' + newCount + ' new · ' + alreadyHave + ' already tracked';
+  document.getElementById('csvPreview').style.display = '';
+  document.getElementById('csvImportBtn').style.display = newCount > 0 ? '' : 'none';
+}
+
+function importFromCsv() {
+  let added = 0;
+  pendingCsvColleges.forEach(c => {
+    if (!state.colleges.find(e => e.name.toLowerCase() === c.name.toLowerCase())) {
+      state.colleges.push({ name: c.name, state: c.state || '', addedAt: new Date().toISOString() });
+      added++;
+    }
+  });
+  save(); renderSidebar(); renderStats();
+  closeModal('addCollege');
+  showToast(added + ' college' + (added !== 1 ? 's' : '') + ' added', '🎓');
+  pendingCsvColleges = [];
 }
 
 function removeCollege(name) {
@@ -843,18 +1212,6 @@ async function fetchIntel(collegeName, collegeState) {
 // ── INIT ──────────────────────────────────────────────────
 function init() {
   load();
-
-  if (state.colleges.length === 0) {
-    state.colleges = [
-      { name: 'Skidmore College',        state: 'New York',      addedAt: new Date().toISOString() },
-      { name: 'University of Rochester', state: 'New York',      addedAt: new Date().toISOString() },
-      { name: 'Clark University',        state: 'Massachusetts', addedAt: new Date().toISOString() },
-      { name: 'University of Richmond',  state: 'Virginia',      addedAt: new Date().toISOString() },
-      { name: 'Northeastern University', state: 'Massachusetts', addedAt: new Date().toISOString() },
-    ];
-    save();
-  }
-
   renderStats(); renderSidebar(); renderFeed();
 }
 
