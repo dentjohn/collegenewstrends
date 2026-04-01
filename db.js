@@ -1,51 +1,33 @@
 // netlify/functions/db.js
-// GET  /api/db          → returns { colleges, items, lastUpdated }
-// POST /api/db          → body: { action, payload } → saves data, returns updated state
+// GET  /api/db  → returns { colleges, items, lastUpdated }
+// POST /api/db  → saves data, returns updated state
 //
-// Storage: Netlify Blobs (key/value, persists across deploys and function instances).
-// Falls back to an in-memory object if Blobs are not available (local dev).
-//
-// Supported actions:
-//   save_colleges   payload: { colleges }
-//   save_items      payload: { items }
-//   save_all        payload: { colleges, items, lastUpdated }
+// Uses Netlify Blobs for shared persistent storage.
+// Always returns a valid response — never hangs.
 
 const STORE_KEY = 'college_intel_v1';
+const EMPTY = { colleges: [], items: [], lastUpdated: null };
 
-// Attempt to load @netlify/blobs. It's pre-installed in Netlify's function runtime.
-let blobsAvailable = false;
-let getStore;
-try {
-  ({ getStore } = require('@netlify/blobs'));
-  blobsAvailable = true;
-} catch (e) {
-  // Running locally without the package — fall back to in-memory
-  blobsAvailable = false;
+async function getBlobStore() {
+  const { getStore } = require('@netlify/blobs');
+  return getStore({ name: 'college-intel', consistency: 'strong' });
 }
 
-// In-memory fallback (lost on cold start, fine for local dev)
-let memoryStore = { colleges: [], items: [], lastUpdated: null };
-
 async function readStore() {
-  if (!blobsAvailable) return { ...memoryStore };
   try {
-    const store = getStore('college-intel');
-    const raw = await store.get(STORE_KEY);
-    if (!raw) return { colleges: [], items: [], lastUpdated: null };
+    const store = await getBlobStore();
+    const raw = await store.get(STORE_KEY, { type: 'text' });
+    if (!raw) return { ...EMPTY };
     return JSON.parse(raw);
   } catch (e) {
     console.error('Blob read error:', e.message);
-    return { colleges: [], items: [], lastUpdated: null };
+    return { ...EMPTY };
   }
 }
 
 async function writeStore(data) {
-  if (!blobsAvailable) {
-    memoryStore = data;
-    return;
-  }
   try {
-    const store = getStore('college-intel');
+    const store = await getBlobStore();
     await store.set(STORE_KEY, JSON.stringify(data));
   } catch (e) {
     console.error('Blob write error:', e.message);
@@ -63,13 +45,11 @@ exports.handler = async (event) => {
     return { statusCode: 204, headers, body: '' };
   }
 
-  // GET — return current state
   if (event.httpMethod === 'GET') {
     const data = await readStore();
     return { statusCode: 200, headers, body: JSON.stringify(data) };
   }
 
-  // POST — update state
   if (event.httpMethod === 'POST') {
     let body;
     try {
@@ -81,15 +61,15 @@ exports.handler = async (event) => {
     const current = await readStore();
     const { action, payload } = body;
 
-    if (action === 'save_colleges') {
+    if (action === 'save_all') {
+      if (payload.colleges  !== undefined) current.colleges  = payload.colleges;
+      if (payload.items     !== undefined) current.items     = payload.items;
+      current.lastUpdated = payload.lastUpdated || new Date().toISOString();
+    } else if (action === 'save_colleges') {
       current.colleges = payload.colleges;
     } else if (action === 'save_items') {
       current.items = payload.items;
       current.lastUpdated = new Date().toISOString();
-    } else if (action === 'save_all') {
-      if (payload.colleges !== undefined) current.colleges = payload.colleges;
-      if (payload.items !== undefined) current.items = payload.items;
-      current.lastUpdated = payload.lastUpdated || new Date().toISOString();
     } else {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Unknown action: ' + action }) };
     }
