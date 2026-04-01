@@ -345,6 +345,7 @@
     <div style="display:flex;gap:2px;background:var(--surface2);border-radius:7px;padding:3px;margin-bottom:1.4rem;">
       <button class="add-tab active" id="addTab-search" onclick="switchAddTab('search')">🔍 Search by Name</button>
       <button class="add-tab" id="addTab-csv" onclick="switchAddTab('csv')">📄 Upload CSV</button>
+      <button class="add-tab" id="addTab-import" onclick="switchAddTab('import')">📥 Import Intel</button>
     </div>
 
     <!-- SEARCH TAB -->
@@ -388,9 +389,52 @@
       </div>
     </div>
 
+    <!-- IMPORT INTEL TAB -->
+    <div id="addPanel-import" style="display:none;">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:1rem;line-height:1.6;">
+        Upload a <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;">.txt</code> or
+        <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;">.docx</code> file
+        containing college news or research from a separate Claude chat.
+        The hub will parse the content and add it directly to your intel feed.
+      </p>
+      <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:1rem;margin-bottom:1rem;font-size:12px;color:var(--text3);line-height:1.7;">
+        <strong style="color:var(--text2);">Suggested Claude prompt to use in a separate chat:</strong><br>
+        "Research recent news and developments at [College Name]. For each item, provide: a short headline, a 2-3 sentence summary, whether the news is positive/negative/neutral, the category (Admissions/Leadership/Financials/Rankings/Campus Life/Academics/Athletics/Research/Controversy/Policy), and your source. Format each item clearly separated by ---"
+      </div>
+      <div id="importDropZone" style="border:2px dashed var(--border2);border-radius:8px;padding:2rem;text-align:center;cursor:pointer;transition:border-color 0.15s;margin-bottom:1rem;"
+           onclick="document.getElementById('importFileInput').click()"
+           ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+           ondragleave="this.style.borderColor='var(--border2)'"
+           ondrop="handleImportDrop(event)">
+        <div style="font-size:28px;margin-bottom:8px;">📥</div>
+        <div style="font-size:13px;color:var(--text2);">Drop .txt or .docx here or <span style="color:var(--accent);">click to browse</span></div>
+      </div>
+      <input type="file" id="importFileInput" accept=".txt,.docx" style="display:none;" onchange="handleImportFile(this.files[0])">
+
+      <!-- College assignment -->
+      <div id="importCollegeSelect" style="display:none;margin-bottom:1rem;">
+        <div class="modal-label">Assign to College</div>
+        <select id="importCollegeName" class="modal-input" style="margin-bottom:0;">
+          <option value="">— select a college —</option>
+        </select>
+        <div style="font-size:11px;color:var(--text3);margin-top:5px;">Or type a new college name:</div>
+        <input type="text" id="importCollegeNameCustom" class="modal-input" placeholder="e.g. Bates College" style="margin-top:6px;margin-bottom:0;">
+      </div>
+
+      <!-- Parsed preview -->
+      <div id="importPreview" style="display:none;">
+        <div style="font-size:11px;color:var(--text3);font-weight:600;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:6px;">Parsed Items</div>
+        <div id="importPreviewList" style="background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:0.8rem;max-height:180px;overflow-y:auto;font-size:12px;color:var(--text2);line-height:1.8;"></div>
+        <div id="importPreviewCount" style="font-size:11px;color:var(--text3);margin-top:6px;"></div>
+      </div>
+
+      <div id="importStatus" style="font-size:12px;color:var(--text3);margin-top:8px;min-height:16px;"></div>
+    </div>
+
     <div class="modal-footer" style="margin-top:1.2rem;">
       <button class="btn btn-ghost" onclick="closeModal('addCollege')">Close</button>
-      <button class="btn btn-primary" id="csvImportBtn" onclick="importFromCsv()" style="display:none;">Import All</button>
+      <button class="btn btn-primary" id="csvImportBtn" onclick="importFromCsv()" style="display:none;">Import Colleges</button>
+      <button class="btn btn-primary" id="intelImportBtn" onclick="importIntelItems()" style="display:none;">Add to Feed</button>
     </div>
   </div>
 </div>
@@ -715,8 +759,10 @@ function switchAddTab(tab) {
   document.querySelectorAll('.add-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('addTab-'+tab).classList.add('active');
   document.getElementById('addPanel-search').style.display = tab === 'search' ? '' : 'none';
-  document.getElementById('addPanel-csv').style.display   = tab === 'csv'    ? '' : 'none';
-  document.getElementById('csvImportBtn').style.display   = tab === 'csv' && pendingCsvColleges.length ? '' : 'none';
+  document.getElementById('addPanel-csv').style.display    = tab === 'csv'    ? '' : 'none';
+  document.getElementById('addPanel-import').style.display = tab === 'import' ? '' : 'none';
+  document.getElementById('csvImportBtn').style.display    = tab === 'csv' && pendingCsvColleges.length ? '' : 'none';
+  document.getElementById('intelImportBtn').style.display  = tab === 'import' && pendingIntelItems.length ? '' : 'none';
 }
 
 function searchColleges(query) {
@@ -764,6 +810,184 @@ function addCollegeByName(name, collegeSt) {
   showToast(name + ' added', '🎓');
   document.getElementById('collegeNameInput').value = '';
   document.getElementById('searchStatus').textContent = '';
+}
+
+// ── IMPORT INTEL FROM FILE ───────────────────────────────
+let pendingIntelItems = [];
+
+function handleImportDrop(event) {
+  event.preventDefault();
+  document.getElementById('importDropZone').style.borderColor = 'var(--border2)';
+  const file = event.dataTransfer.files[0];
+  if (file) handleImportFile(file);
+}
+
+async function handleImportFile(file) {
+  if (!file) return;
+  document.getElementById('importStatus').textContent = 'Reading file...';
+  let text = '';
+  if (file.name.endsWith('.docx')) {
+    text = await readDocx(file);
+  } else {
+    text = await readTextFile(file);
+  }
+  if (!text) { document.getElementById('importStatus').textContent = 'Could not read file.'; return; }
+  parseIntelText(text, file.name);
+}
+
+function readTextFile(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = () => resolve('');
+    reader.readAsText(file);
+  });
+}
+
+async function readDocx(file) {
+  // Use mammoth if available, otherwise read as text
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    // Try loading mammoth from CDN dynamically
+    if (typeof mammoth === 'undefined') {
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js');
+    }
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    return result.value;
+  } catch(e) {
+    document.getElementById('importStatus').textContent = 'Could not parse .docx — try saving as .txt instead.';
+    return '';
+  }
+}
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src; s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+function parseIntelText(text, filename) {
+  pendingIntelItems = [];
+
+  // Split on common separators: ---, ***, ===, blank lines between numbered items
+  const chunks = text.split(/
+(?:---+|\*\*\*+|===+)
+|
+
+(?=\d+[\.\)]|
+)/g)
+    .map(c => c.trim()).filter(c => c.length > 40);
+
+  // If splitting didn't work well, try splitting on double newlines
+  const blocks = chunks.length >= 2 ? chunks : text.split(/
+
++/).map(c => c.trim()).filter(c => c.length > 40);
+
+  blocks.forEach(block => {
+    const item = parseIntelBlock(block);
+    if (item) pendingIntelItems.push(item);
+  });
+
+  // Show college selector
+  const sel = document.getElementById('importCollegeName');
+  sel.innerHTML = '<option value="">— select a tracked college —</option>' +
+    state.colleges.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+  document.getElementById('importCollegeSelect').style.display = '';
+
+  // Show preview
+  if (pendingIntelItems.length > 0) {
+    document.getElementById('importPreviewList').innerHTML =
+      pendingIntelItems.map((it, i) =>
+        `<div style="margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border);">
+          <strong style="color:var(--text);">${i+1}. ${it.headline}</strong><br>
+          <span style="color:var(--text3);">${it.summary.slice(0, 100)}${it.summary.length>100?'…':''}</span>
+        </div>`
+      ).join('');
+    document.getElementById('importPreviewCount').textContent =
+      pendingIntelItems.length + ' item' + (pendingIntelItems.length !== 1 ? 's' : '') + ' parsed from ' + filename;
+    document.getElementById('importPreview').style.display = '';
+    document.getElementById('intelImportBtn').style.display = '';
+    document.getElementById('importStatus').textContent = '';
+  } else {
+    document.getElementById('importStatus').textContent =
+      'Could not parse structured items. Make sure each item is separated by --- or a blank line.';
+    document.getElementById('intelImportBtn').style.display = 'none';
+  }
+}
+
+function parseIntelBlock(block) {
+  // Extract headline: first line, or line starting with "Headline:", "Title:", "#"
+  const lines = block.split('
+').map(l => l.trim()).filter(Boolean);
+  if (!lines.length) return null;
+
+  let headline = '';
+  let summary  = '';
+  let sentiment = 'neutral';
+  let category  = 'General';
+  let sources   = [];
+
+  lines.forEach(line => {
+    const lower = line.toLowerCase();
+    if (/^(headline|title|#)\s*[:：]?\s*/i.test(line)) {
+      headline = line.replace(/^(headline|title|#)\s*[:：]?\s*/i, '').trim();
+    } else if (/^(summary|detail|description|body)\s*[:：]\s*/i.test(line)) {
+      summary = line.replace(/^(summary|detail|description|body)\s*[:：]\s*/i, '').trim();
+    } else if (/^(sentiment|tone|signal)\s*[:：]\s*/i.test(line)) {
+      const val = line.replace(/^(sentiment|tone|signal)\s*[:：]\s*/i, '').trim().toLowerCase();
+      if (val.includes('pos')) sentiment = 'positive';
+      else if (val.includes('neg')) sentiment = 'negative';
+      else sentiment = 'neutral';
+    } else if (/^(category|type|area)\s*[:：]\s*/i.test(line)) {
+      category = line.replace(/^(category|type|area)\s*[:：]\s*/i, '').trim();
+    } else if (/^(source|sources|via|from)\s*[:：]\s*/i.test(line)) {
+      sources = [line.replace(/^(source|sources|via|from)\s*[:：]\s*/i, '').trim()];
+    }
+  });
+
+  // Fallback: use first line as headline, rest as summary
+  if (!headline) headline = lines[0].replace(/^#+\s*/, '').slice(0, 80);
+  if (!summary)  summary  = lines.slice(1).join(' ').slice(0, 400) || block.slice(0, 300);
+
+  if (headline.length < 5) return null;
+
+  return { headline, summary, sentiment, category, sources, confidence: 'medium', date: 'Imported' };
+}
+
+function importIntelItems() {
+  const selVal    = document.getElementById('importCollegeName').value.trim();
+  const customVal = document.getElementById('importCollegeNameCustom').value.trim();
+  const collegeName = customVal || selVal;
+
+  if (!collegeName) {
+    document.getElementById('importStatus').textContent = 'Please select or enter a college name.';
+    return;
+  }
+
+  // Add college to watchlist if not already there
+  if (!state.colleges.find(c => c.name.toLowerCase() === collegeName.toLowerCase())) {
+    state.colleges.push({ name: collegeName, state: '', addedAt: new Date().toISOString() });
+  }
+
+  const now = new Date().toISOString();
+  pendingIntelItems.forEach(item => {
+    item.college    = collegeName;
+    item.fetchedAt  = now;
+    item.isNew      = true;
+    item.bookmarked = false;
+    item.flagged    = false;
+    item.flagClient = '';
+    item.flagNote   = '';
+    item.id         = collegeName + '_import_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+  });
+
+  state.items = [...pendingIntelItems, ...state.items];
+  save(); renderStats(); renderSidebar(); renderFeed();
+  closeModal('addCollege');
+  showToast(pendingIntelItems.length + ' intel item' + (pendingIntelItems.length !== 1 ? 's' : '') + ' added for ' + collegeName, '📥');
+  pendingIntelItems = [];
 }
 
 // CSV handling
