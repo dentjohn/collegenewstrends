@@ -438,6 +438,14 @@
 </div>
 
 <script>
+// ── GLOBAL STATE ──────────────────────────────────────────
+let state = {
+  colleges: [], items: [],
+  sentimentFilter: 'all', collegeFilter: null, categoryFilter: null,
+  lastUpdated: null, currentView: 'feed',
+  pendingFlagItemId: null, lastDigestText: ''
+};
+
 // ── PERSISTENCE (localStorage) ───────────────────────────
 function save() {
   try {
