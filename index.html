@@ -384,42 +384,24 @@
 </div>
 
 <script>
-// ── PERSISTENCE (Netlify Blobs via /api/db) ──────────────
-async function save() {
+// ── PERSISTENCE (localStorage) ───────────────────────────
+function save() {
   try {
-    await fetch('/api/db', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'save_all',
-        payload: {
-          colleges: state.colleges,
-          items: state.items,
-          lastUpdated: state.lastUpdated
-        }
-      })
-    });
-  } catch(e) {
-    console.error('Save error:', e);
-  }
+    localStorage.setItem('cih_colleges', JSON.stringify(state.colleges));
+    localStorage.setItem('cih_items',    JSON.stringify(state.items));
+    localStorage.setItem('cih_updated',  state.lastUpdated || '');
+  } catch(e) { console.error('Save error:', e); }
 }
 
-async function load() {
+function load() {
   try {
-    // 8-second timeout so the UI never hangs on a slow/failed Blobs call
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-    const res = await fetch('/api/db', { signal: controller.signal });
-    clearTimeout(timeout);
-    if (!res.ok) { console.warn('DB load returned', res.status); return; }
-    const data = await res.json();
-    state.colleges    = data.colleges    || [];
-    state.items       = data.items       || [];
-    state.lastUpdated = data.lastUpdated || null;
-  } catch(e) {
-    // AbortError = timeout; TypeError = network failure. Both are non-fatal.
-    console.warn('Load skipped:', e.message);
-  }
+    const c = localStorage.getItem('cih_colleges');
+    const i = localStorage.getItem('cih_items');
+    const u = localStorage.getItem('cih_updated');
+    if (c) state.colleges    = JSON.parse(c);
+    if (i) state.items       = JSON.parse(i);
+    if (u) state.lastUpdated = u;
+  } catch(e) { console.error('Load error:', e); }
 }
 
 // ── TOAST ─────────────────────────────────────────────────
@@ -456,7 +438,7 @@ function switchView(id, btn) {
 }
 
 // ── ADD COLLEGE ───────────────────────────────────────────
-async function addCollege() {
+function addCollege() {
   const name = document.getElementById('collegeNameInput').value.trim();
   const st   = document.getElementById('collegeStateInput').value.trim();
   if (!name) return;
@@ -464,7 +446,7 @@ async function addCollege() {
     closeModal('addCollege'); return;
   }
   state.colleges.push({ name, state: st, addedAt: new Date().toISOString() });
-  await save();
+  save();
   closeModal('addCollege');
   document.getElementById('collegeNameInput').value = '';
   document.getElementById('collegeStateInput').value = '';
@@ -480,17 +462,17 @@ function removeCollege(name) {
 }
 
 // ── BOOKMARK ──────────────────────────────────────────────
-async function toggleBookmark(id) {
+function toggleBookmark(id) {
   const item = state.items.find(i => i.id === id); if (!item) return;
   item.bookmarked = !item.bookmarked;
-  await save(); renderStats(); renderBadges();
+  save(); renderStats(); renderBadges();
   if (state.currentView === 'bookmarks') renderBookmarks(); else renderFeed();
   showToast(item.bookmarked ? 'Bookmarked' : 'Bookmark removed', '🔖');
 }
-async function clearBookmarks() {
+function clearBookmarks() {
   if (!confirm('Clear all bookmarks?')) return;
   state.items.forEach(i => i.bookmarked = false);
-  await save(); renderStats(); renderBadges(); renderBookmarks();
+  save(); renderStats(); renderBadges(); renderBookmarks();
   showToast('All bookmarks cleared', '🔖');
 }
 
@@ -509,21 +491,21 @@ function startFlag(id) {
   document.getElementById('flagNote').value = '';
   openModal('flagClient');
 }
-async function confirmFlag() {
+function confirmFlag() {
   const id   = state.pendingFlagItemId;
   const item = state.items.find(i => i.id === id); if (!item) return;
   item.flagged    = true;
   item.flagClient = document.getElementById('flagClientName').value.trim() || 'Unassigned';
   item.flagNote   = document.getElementById('flagNote').value.trim();
-  await save(); closeModal('flagClient');
+  save(); closeModal('flagClient');
   renderStats(); renderBadges(); renderFeed();
   if (state.currentView === 'flagged') renderFlagged();
   showToast('Flagged for ' + item.flagClient, '🚩');
 }
-async function clearFlags() {
+function clearFlags() {
   if (!confirm('Clear all flags?')) return;
   state.items.forEach(i => { i.flagged = false; i.flagClient = ''; i.flagNote = ''; });
-  await save(); renderStats(); renderBadges(); renderFlagged();
+  save(); renderStats(); renderBadges(); renderFlagged();
   showToast('All flags cleared', '🚩');
 }
 
@@ -831,7 +813,7 @@ async function runDailyRefresh() {
   state.items = [...newItems, ...state.items];
   state.lastUpdated = new Date().toISOString();
 
-  await save();
+  save();
   btn.disabled = false; btn.textContent = '⟳ Refresh All';
   renderStats(); renderSidebar(); renderFeed();
   showToast('Refreshed ' + state.colleges.length + ' college' + (state.colleges.length!==1?'s':''), '✓');
@@ -859,13 +841,8 @@ async function fetchIntel(collegeName, collegeState) {
 }
 
 // ── INIT ──────────────────────────────────────────────────
-async function init() {
-  document.getElementById('feedContainer').innerHTML = `<div class="loading-state">
-    <div class="spinner"></div>
-    <div class="loading-text">Loading saved data...</div>
-  </div>`;
-
-  await load();  // has its own 8s timeout — will never block forever
+function init() {
+  load();
 
   if (state.colleges.length === 0) {
     state.colleges = [
@@ -875,7 +852,7 @@ async function init() {
       { name: 'University of Richmond',  state: 'Virginia',      addedAt: new Date().toISOString() },
       { name: 'Northeastern University', state: 'Massachusetts', addedAt: new Date().toISOString() },
     ];
-    await save();
+    save();
   }
 
   renderStats(); renderSidebar(); renderFeed();
