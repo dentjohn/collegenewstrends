@@ -988,7 +988,7 @@ function buildCard(item, idx) {
       ${item.flagNote ? `<div class="card-flag-note">💬 ${item.flagNote}</div>` : ''}
       <div class="card-footer">
         <div class="card-footer-left">
-          <div class="card-date">📅 ${dateStr}</div>
+          <div class="card-date">📅 ${item.date ? item.date : dateStr}</div>
           ${sources.length ? `<div class="card-sources">${sources.map(s=>`<span class="source-tag">${s}</span>`).join('')}</div>` : ''}
         </div>
         <div class="card-actions">
