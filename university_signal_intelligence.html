@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>University Signal Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root {
+  --bg: #08090c;
+  --surface: #0f1118;
+  --surface2: #161924;
+  --surface3: #1e2233;
+  --border: #252a3a;
+  --border-h: #353d55;
+  --text: #e4e8f4;
+  --text2: #8b93ad;
+  --text3: #545c74;
+  --accent: #5b8def;
+  --accent-dim: rgba(91,141,239,0.1);
+  --pos: #3dd68c;
+  --pos-bg: rgba(61,214,140,0.07);
+  --pos-border: rgba(61,214,140,0.25);
+  --neg: #ef6b6b;
+  --neg-bg: rgba(239,107,107,0.07);
+  --neg-border: rgba(239,107,107,0.25);
+  --mix: #e8b44a;
+  --mix-bg: rgba(232,180,74,0.07);
+  --mix-border: rgba(232,180,74,0.25);
+  --unc: #7e88a4;
+  --unc-bg: rgba(126,136,164,0.07);
+  --unc-border: rgba(126,136,164,0.25);
+  --serif: 'Playfair Display', Georgia, serif;
+  --sans: 'Outfit', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--sans); background:var(--bg); color:var(--text); min-height:100vh; }
+::selection { background:var(--accent); color:#fff; }
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:9999; pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity:0.03;
+}
+
+.container { max-width:900px; margin:0 auto; padding:40px 24px 80px; }
+
+/* ── Header ── */
+.header { text-align:center; margin-bottom:48px; }
+.header-badge {
+  display:inline-flex; align-items:center; gap:6px;
+  font-family:var(--mono); font-size:11px; color:var(--accent);
+  background:var(--accent-dim); border:1px solid rgba(91,141,239,0.2);
+  padding:4px 12px; border-radius:20px; margin-bottom:16px;
+  letter-spacing:0.5px; text-transform:uppercase;
+}
+.header-badge::before { content:''; width:6px; height:6px; background:var(--accent); border-radius:50%; }
+.header h1 {
+  font-family:var(--serif); font-size:clamp(28px,5vw,42px);
+  font-weight:700; line-height:1.15; margin-bottom:10px;
+  background:linear-gradient(135deg, var(--text) 0%, var(--text2) 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.header p { color:var(--text2); font-size:15px; font-weight:300; max-width:520px; margin:0 auto; line-height:1.6; }
+
+/* ── Search ── */
+.search-area { margin-bottom:32px; }
+.search-box {
+  display:flex; gap:10px; background:var(--surface);
+  border:1px solid var(--border); border-radius:14px; padding:6px;
+}
+.search-box input {
+  flex:1; background:transparent; border:none; outline:none;
+  color:var(--text); font-family:var(--sans); font-size:15px;
+  padding:12px 16px; font-weight:400;
+}
+.search-box input::placeholder { color:var(--text3); }
+.search-box button {
+  background:var(--accent); color:#fff; border:none;
+  padding:12px 28px; border-radius:10px; font-family:var(--sans);
+  font-size:14px; font-weight:600; cursor:pointer;
+  transition:all 0.2s;
+}
+.search-box button:hover { filter:brightness(1.15); transform:translateY(-1px); }
+.search-box button:disabled { opacity:0.5; cursor:not-allowed; transform:none; filter:none; }
+
+/* ── Quick picks ── */
+.quick-picks { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; justify-content:center; }
+.chip {
+  font-family:var(--mono); font-size:11px; color:var(--text2);
+  background:var(--surface2); border:1px solid var(--border);
+  padding:5px 14px; border-radius:20px; cursor:pointer;
+  transition:all 0.2s; letter-spacing:0.3px;
+}
+.chip:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-dim); }
+
+/* ── Progress ── */
+.progress-area { display:none; margin-bottom:32px; }
+.progress-area.active { display:block; }
+.progress-bar-outer {
+  background:var(--surface2); border-radius:8px; height:6px;
+  overflow:hidden; margin-bottom:16px;
+}
+.progress-bar-inner {
+  height:100%; background:linear-gradient(90deg, var(--accent), #8b5cf6);
+  border-radius:8px; transition:width 0.5s ease; width:0%;
+}
+.progress-steps { display:flex; flex-direction:column; gap:6px; }
+.progress-step {
+  display:flex; align-items:center; gap:10px;
+  font-family:var(--mono); font-size:12px; color:var(--text3);
+  transition:color 0.3s;
+}
+.progress-step.active { color:var(--accent); }
+.progress-step.done { color:var(--pos); }
+.progress-step .dot {
+  width:8px; height:8px; border-radius:50%;
+  background:var(--border); flex-shrink:0;
+  transition:background 0.3s;
+}
+.progress-step.active .dot { background:var(--accent); box-shadow:0 0 8px var(--accent); }
+.progress-step.done .dot { background:var(--pos); }
+
+/* ── Error ── */
+.error-box {
+  display:none; background:var(--neg-bg); border:1px solid var(--neg-border);
+  border-radius:12px; padding:20px 24px; margin-bottom:24px;
+}
+.error-box.active { display:block; }
+.error-box h3 { color:var(--neg); font-size:14px; font-weight:600; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+.error-box p { color:var(--text2); font-size:13px; line-height:1.6; margin-bottom:6px; }
+.error-box .error-details {
+  font-family:var(--mono); font-size:11px; color:var(--text3);
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:8px; padding:12px; margin-top:12px;
+  max-height:150px; overflow-y:auto; white-space:pre-wrap; word-break:break-all;
+}
+.error-box a { color:var(--accent); text-decoration:underline; }
+.error-box .retry-btn {
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--surface2); border:1px solid var(--border);
+  color:var(--text); font-family:var(--sans); font-size:13px;
+  padding:8px 16px; border-radius:8px; cursor:pointer;
+  margin-top:12px; transition:all 0.2s;
+}
+.error-box .retry-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+/* ── Scorecard ── */
+.scorecard { display:none; }
+.scorecard.active { display:block; }
+
+.summary-banner {
+  border-radius:16px; padding:28px 32px; margin-bottom:28px;
+  border:1px solid var(--border); position:relative; overflow:hidden;
+}
+.summary-banner::before {
+  content:''; position:absolute; top:0; left:0; bottom:0; width:4px;
+}
+.summary-banner.positive { background:var(--pos-bg); border-color:var(--pos-border); }
+.summary-banner.positive::before { background:var(--pos); }
+.summary-banner.negative { background:var(--neg-bg); border-color:var(--neg-border); }
+.summary-banner.negative::before { background:var(--neg); }
+.summary-banner.mixed { background:var(--mix-bg); border-color:var(--mix-border); }
+.summary-banner.mixed::before { background:var(--mix); }
+.summary-banner.unclear { background:var(--unc-bg); border-color:var(--unc-border); }
+.summary-banner.unclear::before { background:var(--unc); }
+
+.summary-top { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:16px; }
+.summary-school { font-family:var(--serif); font-size:24px; font-weight:700; }
+.summary-rank { font-family:var(--mono); font-size:12px; color:var(--text2); margin-top:4px; }
+.summary-pills { display:flex; gap:8px; flex-wrap:wrap; }
+.pill {
+  font-family:var(--mono); font-size:11px; font-weight:500;
+  padding:4px 12px; border-radius:20px; text-transform:uppercase;
+  letter-spacing:0.5px;
+}
+.pill.sig-positive { background:rgba(61,214,140,0.15); color:var(--pos); }
+.pill.sig-negative { background:rgba(239,107,107,0.15); color:var(--neg); }
+.pill.sig-mixed { background:rgba(232,180,74,0.15); color:var(--mix); }
+.pill.sig-unclear { background:rgba(126,136,164,0.15); color:var(--unc); }
+.summary-text { color:var(--text2); font-size:14px; line-height:1.7; }
+
+.export-row { display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap; }
+.export-btn {
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--surface2); border:1px solid var(--border);
+  color:var(--text2); font-family:var(--mono); font-size:12px;
+  padding:8px 16px; border-radius:8px; cursor:pointer;
+  transition:all 0.2s; letter-spacing:0.3px;
+}
+.export-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-dim); }
+
+/* ── Category cards ── */
+.cat-grid { display:grid; gap:16px; margin-bottom:32px; }
+.cat-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:14px; padding:20px 24px; position:relative;
+  border-left:3px solid var(--border);
+  transition:border-color 0.3s;
+}
+.cat-card.positive { border-left-color:var(--pos); }
+.cat-card.negative { border-left-color:var(--neg); }
+.cat-card.mixed { border-left-color:var(--mix); }
+.cat-card.unclear, .cat-card.none { border-left-color:var(--text3); }
+
+.cat-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.cat-name { font-weight:600; font-size:14px; }
+.cat-signal {
+  font-family:var(--mono); font-size:10px; text-transform:uppercase;
+  padding:3px 10px; border-radius:12px; letter-spacing:0.5px;
+}
+.cat-signal.positive { background:rgba(61,214,140,0.12); color:var(--pos); }
+.cat-signal.negative { background:rgba(239,107,107,0.12); color:var(--neg); }
+.cat-signal.mixed { background:rgba(232,180,74,0.12); color:var(--mix); }
+.cat-signal.unclear, .cat-signal.none { background:var(--surface2); color:var(--text3); }
+
+.cat-findings { list-style:none; }
+.cat-findings li {
+  font-size:13px; color:var(--text2); line-height:1.6;
+  padding:4px 0 4px 16px; position:relative;
+}
+.cat-findings li::before {
+  content:''; position:absolute; left:0; top:11px;
+  width:5px; height:5px; border-radius:50%; background:var(--border);
+}
+
+/* ── Sections ── */
+.section { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:24px; margin-bottom:20px; }
+.section h3 { font-size:14px; font-weight:600; margin-bottom:14px; color:var(--text); display:flex; align-items:center; gap:8px; }
+.section p { font-size:13px; color:var(--text2); line-height:1.7; }
+.section ul { list-style:none; }
+.section ul li {
+  font-family:var(--mono); font-size:12px; color:var(--text2);
+  padding:6px 0 6px 16px; position:relative; line-height:1.5;
+}
+.section ul li::before {
+  content:''; position:absolute; left:0; top:12px;
+  width:4px; height:4px; border-radius:50%; background:var(--accent);
+}
+
+/* ── Raw toggle ── */
+.raw-toggle {
+  font-family:var(--mono); font-size:12px; color:var(--text3);
+  cursor:pointer; margin-top:16px; padding:8px 0;
+  transition:color 0.2s;
+}
+.raw-toggle:hover { color:var(--accent); }
+.raw-content {
+  display:none; font-family:var(--mono); font-size:11px;
+  color:var(--text3); background:var(--surface2);
+  border:1px solid var(--border); border-radius:10px;
+  padding:16px; margin-top:10px; white-space:pre-wrap;
+  word-break:break-all; max-height:400px; overflow-y:auto;
+}
+.raw-content.open { display:block; }
+
+@media (max-width:640px) {
+  .container { padding:24px 16px 60px; }
+  .summary-banner { padding:20px; }
+  .summary-school { font-size:20px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-badge">Signal Intelligence</div>
+    <h1>University Signal Scorecard</h1>
+    <p>AI-powered institutional analysis using real-time news. Enter a school to generate a comprehensive signal report.</p>
+  </div>
+
+  <!-- Search -->
+  <div class="search-area">
+    <div class="search-box">
+      <input type="text" id="schoolInput" placeholder="Enter university name..." autocomplete="off">
+      <button id="analyzeBtn" onclick="startAnalysis()">Analyze</button>
+    </div>
+    <div class="quick-picks">
+      <span class="chip" onclick="pickSchool('Princeton University')">Princeton</span>
+      <span class="chip" onclick="pickSchool('Harvard University')">Harvard</span>
+      <span class="chip" onclick="pickSchool('Stanford University')">Stanford</span>
+      <span class="chip" onclick="pickSchool('MIT')">MIT</span>
+      <span class="chip" onclick="pickSchool('Yale University')">Yale</span>
+      <span class="chip" onclick="pickSchool('University of Michigan—Ann Arbor')">Michigan</span>
+      <span class="chip" onclick="pickSchool('Duke University')">Duke</span>
+      <span class="chip" onclick="pickSchool('University of Southern California')">USC</span>
+    </div>
+  </div>
+
+  <!-- Error Box -->
+  <div class="error-box" id="errorBox">
+    <h3><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.5v4M8 10.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> <span id="errorTitle">Analysis Failed</span></h3>
+    <div id="errorBody"></div>
+    <div class="error-details" id="errorDetails" style="display:none;"></div>
+    <button class="retry-btn" onclick="startAnalysis()">&#x21bb; Retry Analysis</button>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-area" id="progressArea">
+    <div class="progress-bar-outer">
+      <div class="progress-bar-inner" id="progressBar"></div>
+    </div>
+    <div class="progress-steps" id="progressSteps"></div>
+  </div>
+
+  <!-- Scorecard -->
+  <div class="scorecard" id="scorecard">
+    <div class="summary-banner" id="summaryBanner">
+      <div class="summary-top">
+        <div>
+          <div class="summary-school" id="summarySchool"></div>
+          <div class="summary-rank" id="summaryRank"></div>
+        </div>
+        <div class="summary-pills" id="summaryPills"></div>
+      </div>
+      <div class="summary-text" id="summaryText"></div>
+    </div>
+
+    <div class="export-row">
+      <button class="export-btn" onclick="exportPDF()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2M8 2v9M5 8l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Export PDF
+      </button>
+      <button class="export-btn" onclick="exportJSON()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 2h5l3 3v9a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 2v3h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Export JSON
+      </button>
+    </div>
+
+    <div class="cat-grid" id="catGrid"></div>
+
+    <div class="section" id="whySection">
+      <h3><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM8 5v3.5M8 10.5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg> Why It Matters</h3>
+      <p id="whyText"></p>
+    </div>
+
+    <div class="section" id="followSection">
+      <h3><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg> Recommended Follow-Up Searches</h3>
+      <ul id="followList"></ul>
+    </div>
+
+    <div class="raw-toggle" onclick="toggleRaw()">
+      <span id="rawToggleText">&#x25B8; Show raw AI response</span>
+    </div>
+    <div class="raw-content" id="rawContent"></div>
+  </div>
+
+</div>
+
+<script>
+// ─── Rankings ────────────────────────────────────────────────────────
+const RANKINGS={"Princeton University":"1","Massachusetts Institute of Technology":"2","Harvard University":"3","Stanford University":"4T","Yale University":"4T","University of Chicago":"6","Duke University":"7T","Johns Hopkins University":"7T","Northwestern University":"7T","University of Pennsylvania":"7T","California Institute of Technology":"11","Cornell University":"12","Brown University":"13T","Dartmouth College":"13T","Columbia University":"15T","University of California, Berkeley":"15T","Rice University":"17T","University of California, Los Angeles":"17T","Vanderbilt University":"17T","Carnegie Mellon University":"20T","University of Michigan\u2014Ann Arbor":"20T","University of Notre Dame":"20T","Washington University in St. Louis":"20T","Emory University":"24T","Georgetown University":"24T","University of North Carolina\u2014Chapel Hill":"26T","University of Virginia":"26T","University of Southern California":"28","University of California, San Diego":"29","University of Florida":"30T","University of Texas at Austin":"30T","Georgia Institute of Technology":"32T","New York University":"32T","University of California, Davis":"32T","University of California, Irvine":"32T","Boston College":"36T","Tufts University":"36T","University of Illinois Urbana-Champaign":"36T","University of Wisconsin\u2014Madison":"36T","University of California, Santa Barbara":"40","Ohio State University":"41","Boston University":"42T","Rutgers University\u2014New Brunswick":"42T","University of Maryland, College Park":"42T","University of Washington":"42T","Lehigh University":"46T","Northeastern University":"46T","Purdue University":"46T","University of Georgia":"46T","University of Rochester":"46T"};
+
+const CATEGORIES = {
+  lost_research_grants:    { name:"Lost Research Grants",      icon:"&#x1F4C9;" },
+  major_new_grants:        { name:"Major New Grants & Gifts",  icon:"&#x1F3C6;" },
+  enrollment_increase:     { name:"Enrollment Increases",      icon:"&#x1F4C8;" },
+  enrollment_decline:      { name:"Enrollment Declines",       icon:"&#x1F4C9;" },
+  senior_admin_turnover:   { name:"Leadership Turnover",       icon:"&#x1F465;" },
+  scandals:                { name:"Scandals & Controversies",  icon:"&#x26A0;" },
+  budget_cuts:             { name:"Budget & Financial Stress",  icon:"&#x1F4B0;" },
+  accreditation_regulatory:{ name:"Accreditation & Compliance", icon:"&#x1F4CB;" },
+  labor_unrest:            { name:"Labor & Faculty Unrest",     icon:"&#x270A;" },
+  program_closures:        { name:"Strategic Expansions / Closures", icon:"&#x1F3D7;" }
+};
+
+const STEPS = [
+  "Initializing analysis engine",
+  "Searching for research & grant signals",
+  "Scanning enrollment & demand patterns",
+  "Checking leadership & governance changes",
+  "Reviewing scandals & controversies",
+  "Assessing financial & budget signals",
+  "Evaluating regulatory & labor developments",
+  "Analyzing strategic initiatives",
+  "Synthesizing overall signal profile",
+  "Generating scorecard"
+];
+
+let currentAnalysis = null;
+let currentSchoolName = '';
+let rawResponse = '';
+
+// ─── API ─────────────────────────────────────────────────────────────
+async function callClaude(prompt, systemPrompt) {
+  const resp = await fetch("https://api.anthropic.com/v1/messages", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      model:"claude-sonnet-4-20250514",
+      max_tokens:4000,
+      system:systemPrompt,
+      tools:[{type:"web_search_20250305",name:"web_search"}],
+      messages:[{role:"user",content:prompt}]
+    })
+  });
+
+  // Read as text first to avoid JSON parse crash on HTML error pages
+  const rawText = await resp.text();
+
+  // Detect HTML error pages (API returning auth/error page instead of JSON)
+  if (rawText.trimStart().startsWith('<') || rawText.trimStart().toLowerCase().startsWith('<!doctype')) {
+    throw new APIError(
+      'The API returned an HTML page instead of JSON. This usually means the request was blocked by authentication or the API proxy. This artifact requires Anthropic API credits at console.anthropic.com (separate from your Claude.ai subscription).',
+      'html_response',
+      resp.status,
+      'Response started with: ' + rawText.substring(0, 500)
+    );
+  }
+
+  // Now parse as JSON
+  let data;
+  try {
+    data = JSON.parse(rawText);
+  } catch (e) {
+    throw new APIError(
+      'API returned non-JSON response (status ' + resp.status + '). Check your API credits and try again.',
+      'parse_error',
+      resp.status,
+      rawText.substring(0, 1000)
+    );
+  }
+
+  if (!resp.ok) {
+    const errMsg = data.error?.message || data.message || JSON.stringify(data);
+    const errType = data.error?.type || 'api_error';
+    throw new APIError(errMsg, errType, resp.status, data);
+  }
+
+  if (data.type === 'error') {
+    const errMsg = data.error?.message || 'Unknown API error';
+    const errType = data.error?.type || 'unknown';
+    throw new APIError(errMsg, errType, resp.status, data);
+  }
+
+  const textBlocks = (data.content || []).filter(b => b.type === 'text').map(b => b.text);
+  if (textBlocks.length === 0) {
+    throw new APIError('No text content in API response. The model may still be processing web searches.', 'empty_response', resp.status, data);
+  }
+
+  return textBlocks.join('\n');
+}
+
+class APIError extends Error {
+  constructor(message, type, status, rawData) {
+    super(message);
+    this.name = 'APIError';
+    this.apiType = type;
+    this.status = status;
+    this.rawData = rawData;
+  }
+}
+
+const SYSTEM_PROMPT = `You are a higher-education intelligence analyst. You search the web for the most recent news (last 12 months) about universities to identify institutional signals.
+
+You MUST respond ONLY with a valid JSON object. No markdown fences, no preamble, no explanation outside the JSON.
+
+JSON schema:
+{
+  "school": "string",
+  "overall_signal": "positive|negative|mixed|unclear",
+  "signal_strength": "high|medium|low",
+  "confidence": "high|medium|low",
+  "summary": "2-3 sentence executive summary",
+  "categories": {
+    "<category_id>": {
+      "signal": "positive|negative|mixed|unclear|none",
+      "findings": ["bullet 1","bullet 2"]
+    }
+  },
+  "follow_up_searches": ["search 1","search 2"],
+  "why_it_matters": "1 paragraph"
+}
+
+Category IDs: lost_research_grants, major_new_grants, enrollment_increase, enrollment_decline, senior_admin_turnover, scandals, budget_cuts, accreditation_regulatory, labor_unrest, program_closures
+
+Rules:
+- Use web search to find REAL, CURRENT news from the last 12 months.
+- Be specific: cite dollar amounts, names, dates when available.
+- If no evidence for a category, set signal to "none" and findings to ["No significant developments found in the last 12 months"].
+- Be analytical and skeptical. Distinguish noise from signal.
+- Do NOT invent findings.
+- Respond ONLY with JSON. No other text.`;
+
+// ─── UI Helpers ──────────────────────────────────────────────────────
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showError(title, bodyHtml, details) {
+  const box = document.getElementById('errorBox');
+  document.getElementById('errorTitle').textContent = title;
+  document.getElementById('errorBody').innerHTML = bodyHtml;
+  const det = document.getElementById('errorDetails');
+  if (details) {
+    det.textContent = typeof details === 'string' ? details : JSON.stringify(details, null, 2);
+    det.style.display = 'block';
+  } else {
+    det.style.display = 'none';
+  }
+  box.classList.add('active');
+}
+
+function hideError() {
+  document.getElementById('errorBox').classList.remove('active');
+}
+
+function pickSchool(name) {
+  document.getElementById('schoolInput').value = name;
+  startAnalysis();
+}
+
+function toggleRaw() {
+  const el = document.getElementById('rawContent');
+  const btn = document.getElementById('rawToggleText');
+  el.classList.toggle('open');
+  btn.innerHTML = el.classList.contains('open') ? '&#x25BE; Hide raw AI response' : '&#x25B8; Show raw AI response';
+}
+
+// ─── Progress ────────────────────────────────────────────────────────
+function showProgress() {
+  const area = document.getElementById('progressArea');
+  const stepsEl = document.getElementById('progressSteps');
+  stepsEl.innerHTML = STEPS.map((s, i) => `
+    <div class="progress-step" id="step-${i}">
+      <span class="dot"></span>
+      <span>${escHtml(s)}</span>
+    </div>
+  `).join('');
+  area.classList.add('active');
+  animateProgress();
+}
+
+let progressTimer = null;
+function animateProgress() {
+  let step = 0;
+  const bar = document.getElementById('progressBar');
+  progressTimer = setInterval(() => {
+    if (step >= STEPS.length) { clearInterval(progressTimer); return; }
+    // mark previous done
+    if (step > 0) {
+      const prev = document.getElementById(`step-${step-1}`);
+      if (prev) { prev.classList.remove('active'); prev.classList.add('done'); }
+    }
+    const cur = document.getElementById(`step-${step}`);
+    if (cur) cur.classList.add('active');
+    bar.style.width = `${((step + 1) / STEPS.length) * 100}%`;
+    step++;
+  }, 1800);
+}
+
+function hideProgress() {
+  if (progressTimer) clearInterval(progressTimer);
+  document.getElementById('progressArea').classList.remove('active');
+}
+
+// ─── Analysis ────────────────────────────────────────────────────────
+async function startAnalysis() {
+  const input = document.getElementById('schoolInput').value.trim();
+  if (!input) return;
+
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  btn.textContent = 'Analyzing...';
+  hideError();
+  document.getElementById('scorecard').classList.remove('active');
+  currentSchoolName = input;
+
+  showProgress();
+
+  try {
+    const prompt = `Analyze "${input}" for all institutional signal categories. Search the web for real, current news from the last 12 months. Return ONLY the JSON object specified in your instructions.`;
+    rawResponse = await callClaude(prompt, SYSTEM_PROMPT);
+
+    // Parse JSON — strip any markdown fences
+    const clean = rawResponse.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+    let data;
+    try {
+      data = JSON.parse(clean);
+    } catch (parseErr) {
+      // Try to extract JSON from the response
+      const match = clean.match(/\{[\s\S]*\}/);
+      if (match) {
+        data = JSON.parse(match[0]);
+      } else {
+        throw parseErr;
+      }
+    }
+
+    currentAnalysis = data;
+    renderScorecard(data);
+
+  } catch (err) {
+    hideProgress();
+
+    if (err instanceof APIError) {
+      const isCredit = err.message.toLowerCase().includes('credit') || err.message.toLowerCase().includes('billing') || err.message.toLowerCase().includes('balance');
+      const isRate = err.apiType === 'rate_limit_error' || err.message.toLowerCase().includes('rate limit');
+      const isOverloaded = err.apiType === 'overloaded_error' || err.message.toLowerCase().includes('overloaded');
+      const isHtml = err.apiType === 'html_response' || err.apiType === 'parse_error';
+
+      if (isHtml) {
+        showError(
+          'API Authentication / Credit Issue',
+          `<p><strong>The API returned an error page instead of data.</strong> This almost always means one of two things:</p>
+           <p><strong>1. No API credits loaded</strong> — This scorecard calls the Anthropic API directly. Those calls use credits from your <strong>Anthropic API account</strong> at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>, which is <em>separate</em> from your Claude.ai Pro/Team chat subscription.</p>
+           <p><strong>2. Running outside Claude.ai</strong> — If you downloaded this HTML file and opened it locally, API authentication won't work. The artifact must run inside Claude.ai to use the API proxy.</p>
+           <p style="margin-top:10px;"><strong>To fix:</strong></p>
+           <p>&#x2022; Go to <a href="https://console.anthropic.com/settings/billing" target="_blank">console.anthropic.com/settings/billing</a> and add API credits</p>
+           <p>&#x2022; Make sure you're running this artifact inside Claude.ai (not as a downloaded file)</p>
+           <p>&#x2022; Retry after adding credits</p>
+           <p style="margin-top:8px; font-size:12px; color:#545c74;">HTTP status returned: ${err.status || 'unknown'}</p>`,
+          err.rawData
+        );
+      } else if (isCredit) {
+        showError(
+          'API Credit Issue',
+          `<p><strong>The Anthropic API returned a billing-related error.</strong></p>
+           <p>This scorecard calls the Anthropic API directly from the browser. These API calls use credits from your <strong>Anthropic API account</strong> (console.anthropic.com), which is separate from your Claude.ai chat subscription.</p>
+           <p><strong>To fix this:</strong></p>
+           <p>1. Go to <a href="https://console.anthropic.com/settings/billing" target="_blank">console.anthropic.com/settings/billing</a></p>
+           <p>2. Add credits or upgrade your plan</p>
+           <p>3. Come back and retry</p>
+           <p style="margin-top:8px; font-size:12px;">If you believe you have credits, check that your default workspace has available balance and that usage limits haven't been reached.</p>`,
+          err.rawData
+        );
+      } else if (isRate) {
+        showError(
+          'Rate Limited',
+          `<p>The API is temporarily rate-limiting requests. Please wait a minute and try again.</p>`,
+          err.rawData
+        );
+      } else if (isOverloaded) {
+        showError(
+          'API Overloaded',
+          `<p>The Anthropic API is currently experiencing high demand. Please wait a moment and retry.</p>`,
+          err.rawData
+        );
+      } else {
+        showError(
+          'API Error',
+          `<p>${escHtml(err.message)}</p>
+           <p style="font-size:12px; margin-top:6px;">Status: ${err.status} | Type: ${err.apiType || 'unknown'}</p>`,
+          err.rawData
+        );
+      }
+    } else if (err instanceof SyntaxError) {
+      showError(
+        'Response Parse Error',
+        `<p>The AI returned a response that couldn't be parsed as JSON. This sometimes happens when the model includes extra text. You can retry — it usually works on the second attempt.</p>`,
+        rawResponse
+      );
+    } else if (err.message && err.message.includes('Failed to fetch')) {
+      showError(
+        'Network Error',
+        `<p>Could not reach the Anthropic API. Check your internet connection and try again.</p>
+         <p style="font-size:12px; margin-top:6px;">If you're running this file locally, ensure your browser allows cross-origin requests to api.anthropic.com. This file works best when opened from Claude.ai artifacts.</p>`,
+        err.message
+      );
+    } else {
+      showError(
+        'Unexpected Error',
+        `<p>${escHtml(err.message || 'An unknown error occurred.')}</p>`,
+        err.stack || err.message
+      );
+    }
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Analyze';
+  }
+}
+
+// ─── Render Scorecard ────────────────────────────────────────────────
+function renderScorecard(d) {
+  hideProgress();
+  const sc = document.getElementById('scorecard');
+
+  // Summary
+  const banner = document.getElementById('summaryBanner');
+  banner.className = 'summary-banner ' + (d.overall_signal || 'unclear');
+  document.getElementById('summarySchool').textContent = d.school || currentSchoolName;
+
+  const rank = RANKINGS[d.school] || RANKINGS[currentSchoolName] || null;
+  document.getElementById('summaryRank').textContent = rank ? `US News 2026 Rank: #${rank}` : '';
+
+  document.getElementById('summaryPills').innerHTML = `
+    <span class="pill sig-${d.overall_signal || 'unclear'}">${(d.overall_signal || 'unclear').toUpperCase()}</span>
+    <span class="pill sig-unclear">Strength: ${d.signal_strength || '?'}</span>
+    <span class="pill sig-unclear">Confidence: ${d.confidence || '?'}</span>
+  `;
+  document.getElementById('summaryText').textContent = d.summary || '';
+
+  // Categories
+  const grid = document.getElementById('catGrid');
+  grid.innerHTML = '';
+  for (const [id, meta] of Object.entries(CATEGORIES)) {
+    const cat = (d.categories && d.categories[id]) ? d.categories[id] : { signal:'none', findings:['No data'] };
+    const sig = cat.signal || 'none';
+    const findings = Array.isArray(cat.findings) ? cat.findings : ['No data'];
+
+    grid.innerHTML += `
+      <div class="cat-card ${sig}">
+        <div class="cat-header">
+          <span class="cat-name">${meta.icon} ${meta.name}</span>
+          <span class="cat-signal ${sig}">${sig.toUpperCase()}</span>
+        </div>
+        <ul class="cat-findings">
+          ${findings.map(f => `<li>${escHtml(f)}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
+  // Why it matters
+  document.getElementById('whyText').textContent = d.why_it_matters || 'No analysis provided.';
+
+  // Follow-ups
+  const fList = document.getElementById('followList');
+  const searches = Array.isArray(d.follow_up_searches) ? d.follow_up_searches : [];
+  fList.innerHTML = searches.map(s => `<li>${escHtml(s)}</li>`).join('') || '<li>No follow-up searches suggested.</li>';
+
+  // Raw
+  document.getElementById('rawContent').textContent = rawResponse;
+  document.getElementById('rawContent').classList.remove('open');
+  document.getElementById('rawToggleText').innerHTML = '&#x25B8; Show raw AI response';
+
+  sc.classList.add('active');
+  sc.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+// ─── PDF Export ──────────────────────────────────────────────────────
+function exportPDF() {
+  if (!currentAnalysis) return;
+  const d = currentAnalysis;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'letter' });
+  const pw = doc.internal.pageSize.getWidth();
+  const ph = doc.internal.pageSize.getHeight();
+  const mx = 20;
+  const cw = pw - mx * 2;
+  let y = 20;
+
+  const sigColor = {
+    positive:[30,160,100], negative:[210,70,70],
+    mixed:[200,155,50], unclear:[120,130,155], none:[120,130,155]
+  };
+
+  function checkPage(need) {
+    if (y + need > ph - 20) { doc.addPage(); y = 20; }
+  }
+
+  // Title
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(20);
+  doc.setTextColor(30,30,40);
+  doc.text(d.school || currentSchoolName, mx, y);
+  y += 8;
+
+  const rank = RANKINGS[d.school] || RANKINGS[currentSchoolName] || null;
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(10);
+  doc.setTextColor(120,120,140);
+  doc.text(`Signal Intelligence Report${rank ? '  |  US News 2026 Rank: #' + rank : ''}  |  ${new Date().toLocaleDateString()}`, mx, y);
+  y += 10;
+
+  // Signal summary bar
+  const sc = sigColor[d.overall_signal] || sigColor.unclear;
+  doc.setFillColor(sc[0], sc[1], sc[2]);
+  doc.roundedRect(mx, y, cw, 10, 2, 2, 'F');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(11);
+  doc.setTextColor(255,255,255);
+  doc.text(`OVERALL: ${(d.overall_signal||'UNCLEAR').toUpperCase()}  |  STRENGTH: ${(d.signal_strength||'?').toUpperCase()}  |  CONFIDENCE: ${(d.confidence||'?').toUpperCase()}`, mx + 4, y + 7);
+  y += 16;
+
+  // Summary
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(10);
+  doc.setTextColor(50,50,60);
+  const summaryLines = doc.splitTextToSize(d.summary || '', cw);
+  checkPage(summaryLines.length * 5 + 4);
+  doc.text(summaryLines, mx, y);
+  y += summaryLines.length * 5 + 8;
+
+  // Categories
+  for (const [id, meta] of Object.entries(CATEGORIES)) {
+    const cat = (d.categories && d.categories[id]) ? d.categories[id] : { signal:'none', findings:['No data'] };
+    const sig = cat.signal || 'none';
+    const findings = Array.isArray(cat.findings) ? cat.findings : [];
+
+    const linesNeeded = 12 + findings.length * 8;
+    checkPage(linesNeeded);
+
+    // Category header
+    const cc = sigColor[sig] || sigColor.unclear;
+    doc.setFillColor(cc[0], cc[1], cc[2]);
+    doc.rect(mx, y, 2, 6, 'F');
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(10);
+    doc.setTextColor(30,30,40);
+    doc.text(meta.name, mx + 5, y + 4);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    doc.setTextColor(cc[0], cc[1], cc[2]);
+    doc.text(sig.toUpperCase(), mx + 5 + doc.getTextWidth(meta.name + '  '), y + 4);
+    y += 8;
+
+    // Findings
+    doc.setTextColor(70,70,80);
+    doc.setFontSize(9);
+    for (const f of findings) {
+      const fLines = doc.splitTextToSize('\u2022  ' + f, cw - 8);
+      checkPage(fLines.length * 4 + 2);
+      doc.text(fLines, mx + 5, y);
+      y += fLines.length * 4 + 1.5;
+    }
+    y += 4;
+  }
+
+  // Why it matters
+  checkPage(20);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(11);
+  doc.setTextColor(30,30,40);
+  doc.text('Why It Matters', mx, y);
+  y += 6;
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(9);
+  doc.setTextColor(60,60,70);
+  const whyLines = doc.splitTextToSize(d.why_it_matters || '', cw);
+  checkPage(whyLines.length * 4 + 4);
+  doc.text(whyLines, mx, y);
+  y += whyLines.length * 4 + 8;
+
+  // Follow-up
+  const searches = Array.isArray(d.follow_up_searches) ? d.follow_up_searches : [];
+  if (searches.length > 0) {
+    checkPage(10 + searches.length * 5);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(11);
+    doc.setTextColor(30,30,40);
+    doc.text('Recommended Follow-Up Searches', mx, y);
+    y += 6;
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    doc.setTextColor(70,70,80);
+    for (const s of searches) {
+      checkPage(6);
+      doc.text('\u2022  ' + s, mx + 3, y);
+      y += 4.5;
+    }
+  }
+
+  // Footer on each page
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(160,160,170);
+    doc.text('University Signal Intelligence  |  College Intel Hub', mx, ph - 10);
+    doc.text(`Page ${i} of ${totalPages}`, pw - mx - 20, ph - 10);
+  }
+
+  const safeName = (d.school || currentSchoolName || 'university').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 40);
+  doc.save(`${safeName}_signal_report.pdf`);
+}
+
+// ─── JSON Export ─────────────────────────────────────────────────────
+function exportJSON() {
+  if (!currentAnalysis) return;
+  const blob = new Blob([JSON.stringify(currentAnalysis, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const safeName = (currentAnalysis.school || currentSchoolName || 'university').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 40);
+  a.download = `${safeName}_signal_data.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── Enter key ───────────────────────────────────────────────────────
+document.getElementById('schoolInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') startAnalysis();
+});
+</script>
+</body>
+</html>
