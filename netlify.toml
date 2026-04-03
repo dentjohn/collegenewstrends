@@ -4,3 +4,7 @@
 
 [functions]
   node_bundler = "esbuild"
+
+[functions."analyze"]
+  # Netlify Functions v2 supports streaming responses natively
+  # The .mjs extension enables ES module format

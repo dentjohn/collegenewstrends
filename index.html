@@ -404,50 +404,92 @@ async function callClaude(prompt, systemPrompt) {
     })
   });
 
-  // Read as text first to avoid JSON parse crash on HTML error pages
-  const rawText = await resp.text();
+  // If the response isn't a stream (error case), read as text
+  const contentType = resp.headers.get('content-type') || '';
 
-  // Detect HTML error pages (API returning auth/error page instead of JSON)
-  if (rawText.trimStart().startsWith('<') || rawText.trimStart().toLowerCase().startsWith('<!doctype')) {
-    throw new APIError(
-      'The API returned an HTML page instead of JSON. This usually means the request was blocked by authentication or the API proxy. This artifact requires Anthropic API credits at console.anthropic.com (separate from your Claude.ai subscription).',
-      'html_response',
-      resp.status,
-      'Response started with: ' + rawText.substring(0, 500)
-    );
-  }
+  if (!contentType.includes('text/event-stream')) {
+    const rawText = await resp.text();
 
-  // Now parse as JSON
-  let data;
-  try {
-    data = JSON.parse(rawText);
-  } catch (e) {
-    throw new APIError(
-      'API returned non-JSON response (status ' + resp.status + '). Check your API credits and try again.',
-      'parse_error',
-      resp.status,
-      rawText.substring(0, 1000)
-    );
-  }
+    // Detect HTML error pages
+    if (rawText.trimStart().startsWith('<') || rawText.trimStart().toLowerCase().startsWith('<!doctype')) {
+      throw new APIError(
+        'The server returned an HTML page instead of data.',
+        'html_response',
+        resp.status,
+        'Response started with: ' + rawText.substring(0, 500)
+      );
+    }
 
-  if (!resp.ok) {
+    // Try to parse as JSON error
+    let data;
+    try { data = JSON.parse(rawText); } catch (e) {
+      throw new APIError(
+        'Non-JSON response (status ' + resp.status + ').',
+        'parse_error', resp.status, rawText.substring(0, 1000)
+      );
+    }
+
     const errMsg = data.error?.message || data.message || JSON.stringify(data);
     const errType = data.error?.type || 'api_error';
     throw new APIError(errMsg, errType, resp.status, data);
   }
 
-  if (data.type === 'error') {
-    const errMsg = data.error?.message || 'Unknown API error';
-    const errType = data.error?.type || 'unknown';
-    throw new APIError(errMsg, errType, resp.status, data);
+  // ── Parse SSE stream ──────────────────────────────────────────────
+  const reader = resp.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let textParts = [];   // Accumulates text from content_block_delta events
+  let currentIndex = -1; // Track which content block we're in
+  let textByBlock = {};  // Store text per block index
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+
+    // Process complete SSE lines
+    const lines = buffer.split('\n');
+    buffer = lines.pop(); // Keep incomplete line in buffer
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const jsonStr = line.slice(6).trim();
+      if (!jsonStr || jsonStr === '[DONE]') continue;
+
+      let event;
+      try { event = JSON.parse(jsonStr); } catch (e) { continue; }
+
+      // Check for API-level errors in the stream
+      if (event.type === 'error') {
+        const errMsg = event.error?.message || 'Stream error';
+        const errType = event.error?.type || 'stream_error';
+        throw new APIError(errMsg, errType, resp.status, event);
+      }
+
+      // Accumulate text deltas
+      if (event.type === 'content_block_start') {
+        currentIndex = event.index;
+        if (event.content_block?.type === 'text') {
+          textByBlock[currentIndex] = event.content_block.text || '';
+        }
+      }
+
+      if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+        const idx = event.index ?? currentIndex;
+        if (textByBlock[idx] === undefined) textByBlock[idx] = '';
+        textByBlock[idx] += event.delta.text || '';
+      }
+    }
   }
 
-  const textBlocks = (data.content || []).filter(b => b.type === 'text').map(b => b.text);
-  if (textBlocks.length === 0) {
-    throw new APIError('No text content in API response. The model may still be processing web searches.', 'empty_response', resp.status, data);
+  // Combine all text blocks
+  const allText = Object.values(textByBlock).join('\n');
+  if (!allText.trim()) {
+    throw new APIError('No text content received from the API stream.', 'empty_response', resp.status, JSON.stringify(textByBlock));
   }
 
-  return textBlocks.join('\n');
+  return allText;
 }
 
 class APIError extends Error {
