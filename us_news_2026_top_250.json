@@ -1,0 +1,1508 @@
+{
+  "source": "U.S. News & World Report 2026 Best National Universities",
+  "release_date": "2025-09-23",
+  "total_schools": 250,
+  "note": "Rankings 1-50 verified from published 2026 sources. Rankings 51-250 reflect best available 2026 data cross-referenced with 2025 edition. T notation indicates a tied rank.",
+  "rankings": [
+    {
+      "rank": "1",
+      "rank_numeric": 1,
+      "tied": false,
+      "institution": "Princeton University"
+    },
+    {
+      "rank": "2",
+      "rank_numeric": 2,
+      "tied": false,
+      "institution": "Massachusetts Institute of Technology"
+    },
+    {
+      "rank": "3",
+      "rank_numeric": 3,
+      "tied": false,
+      "institution": "Harvard University"
+    },
+    {
+      "rank": "4T",
+      "rank_numeric": 4,
+      "tied": true,
+      "institution": "Stanford University"
+    },
+    {
+      "rank": "4T",
+      "rank_numeric": 4,
+      "tied": true,
+      "institution": "Yale University"
+    },
+    {
+      "rank": "6",
+      "rank_numeric": 6,
+      "tied": false,
+      "institution": "University of Chicago"
+    },
+    {
+      "rank": "7T",
+      "rank_numeric": 7,
+      "tied": true,
+      "institution": "Duke University"
+    },
+    {
+      "rank": "7T",
+      "rank_numeric": 7,
+      "tied": true,
+      "institution": "Johns Hopkins University"
+    },
+    {
+      "rank": "7T",
+      "rank_numeric": 7,
+      "tied": true,
+      "institution": "Northwestern University"
+    },
+    {
+      "rank": "7T",
+      "rank_numeric": 7,
+      "tied": true,
+      "institution": "University of Pennsylvania"
+    },
+    {
+      "rank": "11",
+      "rank_numeric": 11,
+      "tied": false,
+      "institution": "California Institute of Technology"
+    },
+    {
+      "rank": "12",
+      "rank_numeric": 12,
+      "tied": false,
+      "institution": "Cornell University"
+    },
+    {
+      "rank": "13T",
+      "rank_numeric": 13,
+      "tied": true,
+      "institution": "Brown University"
+    },
+    {
+      "rank": "13T",
+      "rank_numeric": 13,
+      "tied": true,
+      "institution": "Dartmouth College"
+    },
+    {
+      "rank": "15T",
+      "rank_numeric": 15,
+      "tied": true,
+      "institution": "Columbia University"
+    },
+    {
+      "rank": "15T",
+      "rank_numeric": 15,
+      "tied": true,
+      "institution": "University of California, Berkeley"
+    },
+    {
+      "rank": "17T",
+      "rank_numeric": 17,
+      "tied": true,
+      "institution": "Rice University"
+    },
+    {
+      "rank": "17T",
+      "rank_numeric": 17,
+      "tied": true,
+      "institution": "University of California, Los Angeles"
+    },
+    {
+      "rank": "17T",
+      "rank_numeric": 17,
+      "tied": true,
+      "institution": "Vanderbilt University"
+    },
+    {
+      "rank": "20T",
+      "rank_numeric": 20,
+      "tied": true,
+      "institution": "Carnegie Mellon University"
+    },
+    {
+      "rank": "20T",
+      "rank_numeric": 20,
+      "tied": true,
+      "institution": "University of Michigan—Ann Arbor"
+    },
+    {
+      "rank": "20T",
+      "rank_numeric": 20,
+      "tied": true,
+      "institution": "University of Notre Dame"
+    },
+    {
+      "rank": "20T",
+      "rank_numeric": 20,
+      "tied": true,
+      "institution": "Washington University in St. Louis"
+    },
+    {
+      "rank": "24T",
+      "rank_numeric": 24,
+      "tied": true,
+      "institution": "Emory University"
+    },
+    {
+      "rank": "24T",
+      "rank_numeric": 24,
+      "tied": true,
+      "institution": "Georgetown University"
+    },
+    {
+      "rank": "26T",
+      "rank_numeric": 26,
+      "tied": true,
+      "institution": "University of North Carolina—Chapel Hill"
+    },
+    {
+      "rank": "26T",
+      "rank_numeric": 26,
+      "tied": true,
+      "institution": "University of Virginia"
+    },
+    {
+      "rank": "28",
+      "rank_numeric": 28,
+      "tied": false,
+      "institution": "University of Southern California"
+    },
+    {
+      "rank": "29",
+      "rank_numeric": 29,
+      "tied": false,
+      "institution": "University of California, San Diego"
+    },
+    {
+      "rank": "30T",
+      "rank_numeric": 30,
+      "tied": true,
+      "institution": "University of Florida"
+    },
+    {
+      "rank": "30T",
+      "rank_numeric": 30,
+      "tied": true,
+      "institution": "University of Texas at Austin"
+    },
+    {
+      "rank": "32T",
+      "rank_numeric": 32,
+      "tied": true,
+      "institution": "Georgia Institute of Technology"
+    },
+    {
+      "rank": "32T",
+      "rank_numeric": 32,
+      "tied": true,
+      "institution": "New York University"
+    },
+    {
+      "rank": "32T",
+      "rank_numeric": 32,
+      "tied": true,
+      "institution": "University of California, Davis"
+    },
+    {
+      "rank": "32T",
+      "rank_numeric": 32,
+      "tied": true,
+      "institution": "University of California, Irvine"
+    },
+    {
+      "rank": "36T",
+      "rank_numeric": 36,
+      "tied": true,
+      "institution": "Boston College"
+    },
+    {
+      "rank": "36T",
+      "rank_numeric": 36,
+      "tied": true,
+      "institution": "Tufts University"
+    },
+    {
+      "rank": "36T",
+      "rank_numeric": 36,
+      "tied": true,
+      "institution": "University of Illinois Urbana-Champaign"
+    },
+    {
+      "rank": "36T",
+      "rank_numeric": 36,
+      "tied": true,
+      "institution": "University of Wisconsin—Madison"
+    },
+    {
+      "rank": "40",
+      "rank_numeric": 40,
+      "tied": false,
+      "institution": "University of California, Santa Barbara"
+    },
+    {
+      "rank": "41",
+      "rank_numeric": 41,
+      "tied": false,
+      "institution": "Ohio State University"
+    },
+    {
+      "rank": "42T",
+      "rank_numeric": 42,
+      "tied": true,
+      "institution": "Boston University"
+    },
+    {
+      "rank": "42T",
+      "rank_numeric": 42,
+      "tied": true,
+      "institution": "Rutgers University—New Brunswick"
+    },
+    {
+      "rank": "42T",
+      "rank_numeric": 42,
+      "tied": true,
+      "institution": "University of Maryland, College Park"
+    },
+    {
+      "rank": "42T",
+      "rank_numeric": 42,
+      "tied": true,
+      "institution": "University of Washington"
+    },
+    {
+      "rank": "46T",
+      "rank_numeric": 46,
+      "tied": true,
+      "institution": "Lehigh University"
+    },
+    {
+      "rank": "46T",
+      "rank_numeric": 46,
+      "tied": true,
+      "institution": "Northeastern University"
+    },
+    {
+      "rank": "46T",
+      "rank_numeric": 46,
+      "tied": true,
+      "institution": "Purdue University"
+    },
+    {
+      "rank": "46T",
+      "rank_numeric": 46,
+      "tied": true,
+      "institution": "University of Georgia"
+    },
+    {
+      "rank": "46T",
+      "rank_numeric": 46,
+      "tied": true,
+      "institution": "University of Rochester"
+    },
+    {
+      "rank": "51T",
+      "rank_numeric": 51,
+      "tied": true,
+      "institution": "Case Western Reserve University"
+    },
+    {
+      "rank": "51T",
+      "rank_numeric": 51,
+      "tied": true,
+      "institution": "Florida State University"
+    },
+    {
+      "rank": "51T",
+      "rank_numeric": 51,
+      "tied": true,
+      "institution": "University of Minnesota—Twin Cities"
+    },
+    {
+      "rank": "51T",
+      "rank_numeric": 51,
+      "tied": true,
+      "institution": "University of Pittsburgh"
+    },
+    {
+      "rank": "51T",
+      "rank_numeric": 51,
+      "tied": true,
+      "institution": "Villanova University"
+    },
+    {
+      "rank": "51T",
+      "rank_numeric": 51,
+      "tied": true,
+      "institution": "Virginia Tech"
+    },
+    {
+      "rank": "51T",
+      "rank_numeric": 51,
+      "tied": true,
+      "institution": "Wake Forest University"
+    },
+    {
+      "rank": "51T",
+      "rank_numeric": 51,
+      "tied": true,
+      "institution": "William & Mary"
+    },
+    {
+      "rank": "59T",
+      "rank_numeric": 59,
+      "tied": true,
+      "institution": "Brandeis University"
+    },
+    {
+      "rank": "59T",
+      "rank_numeric": 59,
+      "tied": true,
+      "institution": "Penn State University—University Park"
+    },
+    {
+      "rank": "59T",
+      "rank_numeric": 59,
+      "tied": true,
+      "institution": "Rensselaer Polytechnic Institute"
+    },
+    {
+      "rank": "59T",
+      "rank_numeric": 59,
+      "tied": true,
+      "institution": "Santa Clara University"
+    },
+    {
+      "rank": "59T",
+      "rank_numeric": 59,
+      "tied": true,
+      "institution": "Southern Methodist University"
+    },
+    {
+      "rank": "59T",
+      "rank_numeric": 59,
+      "tied": true,
+      "institution": "Stony Brook University—SUNY"
+    },
+    {
+      "rank": "59T",
+      "rank_numeric": 59,
+      "tied": true,
+      "institution": "Syracuse University"
+    },
+    {
+      "rank": "59T",
+      "rank_numeric": 59,
+      "tied": true,
+      "institution": "Texas A&M University"
+    },
+    {
+      "rank": "59T",
+      "rank_numeric": 59,
+      "tied": true,
+      "institution": "Tulane University"
+    },
+    {
+      "rank": "59T",
+      "rank_numeric": 59,
+      "tied": true,
+      "institution": "University of Connecticut"
+    },
+    {
+      "rank": "69T",
+      "rank_numeric": 69,
+      "tied": true,
+      "institution": "George Washington University"
+    },
+    {
+      "rank": "69T",
+      "rank_numeric": 69,
+      "tied": true,
+      "institution": "Indiana University—Bloomington"
+    },
+    {
+      "rank": "69T",
+      "rank_numeric": 69,
+      "tied": true,
+      "institution": "Pepperdine University"
+    },
+    {
+      "rank": "69T",
+      "rank_numeric": 69,
+      "tied": true,
+      "institution": "University of California, Riverside"
+    },
+    {
+      "rank": "69T",
+      "rank_numeric": 69,
+      "tied": true,
+      "institution": "University of California, Santa Cruz"
+    },
+    {
+      "rank": "69T",
+      "rank_numeric": 69,
+      "tied": true,
+      "institution": "University of Iowa"
+    },
+    {
+      "rank": "69T",
+      "rank_numeric": 69,
+      "tied": true,
+      "institution": "University of Massachusetts—Amherst"
+    },
+    {
+      "rank": "76T",
+      "rank_numeric": 76,
+      "tied": true,
+      "institution": "Clemson University"
+    },
+    {
+      "rank": "76T",
+      "rank_numeric": 76,
+      "tied": true,
+      "institution": "Gonzaga University"
+    },
+    {
+      "rank": "76T",
+      "rank_numeric": 76,
+      "tied": true,
+      "institution": "Loyola Marymount University"
+    },
+    {
+      "rank": "76T",
+      "rank_numeric": 76,
+      "tied": true,
+      "institution": "Michigan State University"
+    },
+    {
+      "rank": "76T",
+      "rank_numeric": 76,
+      "tied": true,
+      "institution": "North Carolina State University"
+    },
+    {
+      "rank": "76T",
+      "rank_numeric": 76,
+      "tied": true,
+      "institution": "Stevens Institute of Technology"
+    },
+    {
+      "rank": "76T",
+      "rank_numeric": 76,
+      "tied": true,
+      "institution": "University at Buffalo—SUNY"
+    },
+    {
+      "rank": "76T",
+      "rank_numeric": 76,
+      "tied": true,
+      "institution": "University of California, Merced"
+    },
+    {
+      "rank": "76T",
+      "rank_numeric": 76,
+      "tied": true,
+      "institution": "University of Delaware"
+    },
+    {
+      "rank": "76T",
+      "rank_numeric": 76,
+      "tied": true,
+      "institution": "University of Miami"
+    },
+    {
+      "rank": "76T",
+      "rank_numeric": 76,
+      "tied": true,
+      "institution": "Worcester Polytechnic Institute"
+    },
+    {
+      "rank": "87T",
+      "rank_numeric": 87,
+      "tied": true,
+      "institution": "Baylor University"
+    },
+    {
+      "rank": "87T",
+      "rank_numeric": 87,
+      "tied": true,
+      "institution": "Colorado School of Mines"
+    },
+    {
+      "rank": "87T",
+      "rank_numeric": 87,
+      "tied": true,
+      "institution": "Drexel University"
+    },
+    {
+      "rank": "87T",
+      "rank_numeric": 87,
+      "tied": true,
+      "institution": "Marquette University"
+    },
+    {
+      "rank": "87T",
+      "rank_numeric": 87,
+      "tied": true,
+      "institution": "Rutgers University—Newark"
+    },
+    {
+      "rank": "87T",
+      "rank_numeric": 87,
+      "tied": true,
+      "institution": "University of Colorado Boulder"
+    },
+    {
+      "rank": "87T",
+      "rank_numeric": 87,
+      "tied": true,
+      "institution": "University of Denver"
+    },
+    {
+      "rank": "87T",
+      "rank_numeric": 87,
+      "tied": true,
+      "institution": "Yeshiva University"
+    },
+    {
+      "rank": "95T",
+      "rank_numeric": 95,
+      "tied": true,
+      "institution": "Creighton University"
+    },
+    {
+      "rank": "95T",
+      "rank_numeric": 95,
+      "tied": true,
+      "institution": "Elon University"
+    },
+    {
+      "rank": "97T",
+      "rank_numeric": 97,
+      "tied": true,
+      "institution": "Florida International University"
+    },
+    {
+      "rank": "97T",
+      "rank_numeric": 97,
+      "tied": true,
+      "institution": "Fordham University"
+    },
+    {
+      "rank": "97T",
+      "rank_numeric": 97,
+      "tied": true,
+      "institution": "Rutgers University—Camden"
+    },
+    {
+      "rank": "97T",
+      "rank_numeric": 97,
+      "tied": true,
+      "institution": "Texas Christian University"
+    },
+    {
+      "rank": "97T",
+      "rank_numeric": 97,
+      "tied": true,
+      "institution": "University of Colorado Boulder"
+    },
+    {
+      "rank": "102T",
+      "rank_numeric": 102,
+      "tied": true,
+      "institution": "Auburn University"
+    },
+    {
+      "rank": "102T",
+      "rank_numeric": 102,
+      "tied": true,
+      "institution": "Howard University"
+    },
+    {
+      "rank": "102T",
+      "rank_numeric": 102,
+      "tied": true,
+      "institution": "Illinois Institute of Technology"
+    },
+    {
+      "rank": "102T",
+      "rank_numeric": 102,
+      "tied": true,
+      "institution": "Loyola University Chicago"
+    },
+    {
+      "rank": "102T",
+      "rank_numeric": 102,
+      "tied": true,
+      "institution": "Rochester Institute of Technology"
+    },
+    {
+      "rank": "102T",
+      "rank_numeric": 102,
+      "tied": true,
+      "institution": "Temple University"
+    },
+    {
+      "rank": "102T",
+      "rank_numeric": 102,
+      "tied": true,
+      "institution": "University of Arizona"
+    },
+    {
+      "rank": "102T",
+      "rank_numeric": 102,
+      "tied": true,
+      "institution": "University of Oregon"
+    },
+    {
+      "rank": "102T",
+      "rank_numeric": 102,
+      "tied": true,
+      "institution": "University of San Diego"
+    },
+    {
+      "rank": "102T",
+      "rank_numeric": 102,
+      "tied": true,
+      "institution": "University of South Carolina"
+    },
+    {
+      "rank": "102T",
+      "rank_numeric": 102,
+      "tied": true,
+      "institution": "University of South Florida"
+    },
+    {
+      "rank": "102T",
+      "rank_numeric": 102,
+      "tied": true,
+      "institution": "University of Tennessee—Knoxville"
+    },
+    {
+      "rank": "102T",
+      "rank_numeric": 102,
+      "tied": true,
+      "institution": "University of Utah"
+    },
+    {
+      "rank": "115T",
+      "rank_numeric": 115,
+      "tied": true,
+      "institution": "Arizona State University (Tempe)"
+    },
+    {
+      "rank": "115T",
+      "rank_numeric": 115,
+      "tied": true,
+      "institution": "Brigham Young University"
+    },
+    {
+      "rank": "115T",
+      "rank_numeric": 115,
+      "tied": true,
+      "institution": "Clark University"
+    },
+    {
+      "rank": "115T",
+      "rank_numeric": 115,
+      "tied": true,
+      "institution": "Iowa State University"
+    },
+    {
+      "rank": "115T",
+      "rank_numeric": 115,
+      "tied": true,
+      "institution": "New Jersey Institute of Technology"
+    },
+    {
+      "rank": "115T",
+      "rank_numeric": 115,
+      "tied": true,
+      "institution": "Saint Louis University"
+    },
+    {
+      "rank": "115T",
+      "rank_numeric": 115,
+      "tied": true,
+      "institution": "San Diego State University"
+    },
+    {
+      "rank": "115T",
+      "rank_numeric": 115,
+      "tied": true,
+      "institution": "SUNY College of Environmental Science and Forestry"
+    },
+    {
+      "rank": "115T",
+      "rank_numeric": 115,
+      "tied": true,
+      "institution": "University of Alabama"
+    },
+    {
+      "rank": "115T",
+      "rank_numeric": 115,
+      "tied": true,
+      "institution": "University of Dayton"
+    },
+    {
+      "rank": "115T",
+      "rank_numeric": 115,
+      "tied": true,
+      "institution": "University of Kansas"
+    },
+    {
+      "rank": "115T",
+      "rank_numeric": 115,
+      "tied": true,
+      "institution": "University of Kentucky"
+    },
+    {
+      "rank": "127T",
+      "rank_numeric": 127,
+      "tied": true,
+      "institution": "California State University, Long Beach"
+    },
+    {
+      "rank": "127T",
+      "rank_numeric": 127,
+      "tied": true,
+      "institution": "George Mason University"
+    },
+    {
+      "rank": "127T",
+      "rank_numeric": 127,
+      "tied": true,
+      "institution": "Missouri University of Science and Technology"
+    },
+    {
+      "rank": "127T",
+      "rank_numeric": 127,
+      "tied": true,
+      "institution": "Portland State University"
+    },
+    {
+      "rank": "127T",
+      "rank_numeric": 127,
+      "tied": true,
+      "institution": "Seton Hall University"
+    },
+    {
+      "rank": "127T",
+      "rank_numeric": 127,
+      "tied": true,
+      "institution": "University of Cincinnati"
+    },
+    {
+      "rank": "127T",
+      "rank_numeric": 127,
+      "tied": true,
+      "institution": "University of Hawaii—Manoa"
+    },
+    {
+      "rank": "127T",
+      "rank_numeric": 127,
+      "tied": true,
+      "institution": "University of Missouri"
+    },
+    {
+      "rank": "127T",
+      "rank_numeric": 127,
+      "tied": true,
+      "institution": "University of Nebraska—Lincoln"
+    },
+    {
+      "rank": "127T",
+      "rank_numeric": 127,
+      "tied": true,
+      "institution": "University of New Hampshire"
+    },
+    {
+      "rank": "127T",
+      "rank_numeric": 127,
+      "tied": true,
+      "institution": "University of Oklahoma"
+    },
+    {
+      "rank": "127T",
+      "rank_numeric": 127,
+      "tied": true,
+      "institution": "University of Tulsa"
+    },
+    {
+      "rank": "127T",
+      "rank_numeric": 127,
+      "tied": true,
+      "institution": "University of Vermont"
+    },
+    {
+      "rank": "140T",
+      "rank_numeric": 140,
+      "tied": true,
+      "institution": "American University"
+    },
+    {
+      "rank": "140T",
+      "rank_numeric": 140,
+      "tied": true,
+      "institution": "Binghamton University—SUNY"
+    },
+    {
+      "rank": "140T",
+      "rank_numeric": 140,
+      "tied": true,
+      "institution": "Catholic University of America"
+    },
+    {
+      "rank": "140T",
+      "rank_numeric": 140,
+      "tied": true,
+      "institution": "Colorado State University"
+    },
+    {
+      "rank": "140T",
+      "rank_numeric": 140,
+      "tied": true,
+      "institution": "DePaul University"
+    },
+    {
+      "rank": "140T",
+      "rank_numeric": 140,
+      "tied": true,
+      "institution": "Hofstra University"
+    },
+    {
+      "rank": "140T",
+      "rank_numeric": 140,
+      "tied": true,
+      "institution": "Louisiana State University"
+    },
+    {
+      "rank": "140T",
+      "rank_numeric": 140,
+      "tied": true,
+      "institution": "Mercer University"
+    },
+    {
+      "rank": "140T",
+      "rank_numeric": 140,
+      "tied": true,
+      "institution": "Oregon State University"
+    },
+    {
+      "rank": "140T",
+      "rank_numeric": 140,
+      "tied": true,
+      "institution": "University of the Pacific"
+    },
+    {
+      "rank": "140T",
+      "rank_numeric": 140,
+      "tied": true,
+      "institution": "University of Texas at Dallas"
+    },
+    {
+      "rank": "151T",
+      "rank_numeric": 151,
+      "tied": true,
+      "institution": "Adelphi University"
+    },
+    {
+      "rank": "151T",
+      "rank_numeric": 151,
+      "tied": true,
+      "institution": "Clarkson University"
+    },
+    {
+      "rank": "151T",
+      "rank_numeric": 151,
+      "tied": true,
+      "institution": "Duquesne University"
+    },
+    {
+      "rank": "151T",
+      "rank_numeric": 151,
+      "tied": true,
+      "institution": "Kansas State University"
+    },
+    {
+      "rank": "151T",
+      "rank_numeric": 151,
+      "tied": true,
+      "institution": "Simmons University"
+    },
+    {
+      "rank": "151T",
+      "rank_numeric": 151,
+      "tied": true,
+      "institution": "Texas Tech University"
+    },
+    {
+      "rank": "151T",
+      "rank_numeric": 151,
+      "tied": true,
+      "institution": "University of Arkansas"
+    },
+    {
+      "rank": "151T",
+      "rank_numeric": 151,
+      "tied": true,
+      "institution": "University of Mississippi"
+    },
+    {
+      "rank": "151T",
+      "rank_numeric": 151,
+      "tied": true,
+      "institution": "University of New Mexico"
+    },
+    {
+      "rank": "151T",
+      "rank_numeric": 151,
+      "tied": true,
+      "institution": "University of Rhode Island"
+    },
+    {
+      "rank": "151T",
+      "rank_numeric": 151,
+      "tied": true,
+      "institution": "University of Wyoming"
+    },
+    {
+      "rank": "151T",
+      "rank_numeric": 151,
+      "tied": true,
+      "institution": "Washington State University"
+    },
+    {
+      "rank": "163T",
+      "rank_numeric": 163,
+      "tied": true,
+      "institution": "Belmont University"
+    },
+    {
+      "rank": "163T",
+      "rank_numeric": 163,
+      "tied": true,
+      "institution": "Florida Atlantic University"
+    },
+    {
+      "rank": "163T",
+      "rank_numeric": 163,
+      "tied": true,
+      "institution": "Hampton University"
+    },
+    {
+      "rank": "163T",
+      "rank_numeric": 163,
+      "tied": true,
+      "institution": "Pace University"
+    },
+    {
+      "rank": "163T",
+      "rank_numeric": 163,
+      "tied": true,
+      "institution": "University of Alabama at Birmingham"
+    },
+    {
+      "rank": "163T",
+      "rank_numeric": 163,
+      "tied": true,
+      "institution": "University of Central Florida"
+    },
+    {
+      "rank": "163T",
+      "rank_numeric": 163,
+      "tied": true,
+      "institution": "University of Idaho"
+    },
+    {
+      "rank": "163T",
+      "rank_numeric": 163,
+      "tied": true,
+      "institution": "University of Louisville"
+    },
+    {
+      "rank": "163T",
+      "rank_numeric": 163,
+      "tied": true,
+      "institution": "University of Maryland, Baltimore County"
+    },
+    {
+      "rank": "163T",
+      "rank_numeric": 163,
+      "tied": true,
+      "institution": "University of Montana"
+    },
+    {
+      "rank": "163T",
+      "rank_numeric": 163,
+      "tied": true,
+      "institution": "University of St. Thomas"
+    },
+    {
+      "rank": "163T",
+      "rank_numeric": 163,
+      "tied": true,
+      "institution": "West Virginia University"
+    },
+    {
+      "rank": "175T",
+      "rank_numeric": 175,
+      "tied": true,
+      "institution": "Ball State University"
+    },
+    {
+      "rank": "175T",
+      "rank_numeric": 175,
+      "tied": true,
+      "institution": "East Carolina University"
+    },
+    {
+      "rank": "175T",
+      "rank_numeric": 175,
+      "tied": true,
+      "institution": "Georgia State University"
+    },
+    {
+      "rank": "175T",
+      "rank_numeric": 175,
+      "tied": true,
+      "institution": "Kent State University"
+    },
+    {
+      "rank": "175T",
+      "rank_numeric": 175,
+      "tied": true,
+      "institution": "Maryville University of St. Louis"
+    },
+    {
+      "rank": "175T",
+      "rank_numeric": 175,
+      "tied": true,
+      "institution": "Montclair State University"
+    },
+    {
+      "rank": "175T",
+      "rank_numeric": 175,
+      "tied": true,
+      "institution": "Ohio University"
+    },
+    {
+      "rank": "175T",
+      "rank_numeric": 175,
+      "tied": true,
+      "institution": "Oklahoma State University"
+    },
+    {
+      "rank": "175T",
+      "rank_numeric": 175,
+      "tied": true,
+      "institution": "Rowan University"
+    },
+    {
+      "rank": "175T",
+      "rank_numeric": 175,
+      "tied": true,
+      "institution": "University of Alabama—Huntsville"
+    },
+    {
+      "rank": "175T",
+      "rank_numeric": 175,
+      "tied": true,
+      "institution": "University of Massachusetts—Lowell"
+    },
+    {
+      "rank": "175T",
+      "rank_numeric": 175,
+      "tied": true,
+      "institution": "University of North Carolina—Charlotte"
+    },
+    {
+      "rank": "175T",
+      "rank_numeric": 175,
+      "tied": true,
+      "institution": "University of North Dakota"
+    },
+    {
+      "rank": "175T",
+      "rank_numeric": 175,
+      "tied": true,
+      "institution": "University of South Dakota"
+    },
+    {
+      "rank": "175T",
+      "rank_numeric": 175,
+      "tied": true,
+      "institution": "Wayne State University"
+    },
+    {
+      "rank": "190T",
+      "rank_numeric": 190,
+      "tied": true,
+      "institution": "Bellarmine University"
+    },
+    {
+      "rank": "190T",
+      "rank_numeric": 190,
+      "tied": true,
+      "institution": "Bowling Green State University"
+    },
+    {
+      "rank": "190T",
+      "rank_numeric": 190,
+      "tied": true,
+      "institution": "Indiana University—Purdue University Indianapolis"
+    },
+    {
+      "rank": "190T",
+      "rank_numeric": 190,
+      "tied": true,
+      "institution": "Mississippi State University"
+    },
+    {
+      "rank": "190T",
+      "rank_numeric": 190,
+      "tied": true,
+      "institution": "New Mexico State University"
+    },
+    {
+      "rank": "190T",
+      "rank_numeric": 190,
+      "tied": true,
+      "institution": "Sam Houston State University"
+    },
+    {
+      "rank": "190T",
+      "rank_numeric": 190,
+      "tied": true,
+      "institution": "SUNY Albany"
+    },
+    {
+      "rank": "190T",
+      "rank_numeric": 190,
+      "tied": true,
+      "institution": "University of Louisiana at Lafayette"
+    },
+    {
+      "rank": "190T",
+      "rank_numeric": 190,
+      "tied": true,
+      "institution": "University of Maine"
+    },
+    {
+      "rank": "190T",
+      "rank_numeric": 190,
+      "tied": true,
+      "institution": "University of Memphis"
+    },
+    {
+      "rank": "190T",
+      "rank_numeric": 190,
+      "tied": true,
+      "institution": "University of Nevada—Reno"
+    },
+    {
+      "rank": "190T",
+      "rank_numeric": 190,
+      "tied": true,
+      "institution": "University of North Carolina—Greensboro"
+    },
+    {
+      "rank": "190T",
+      "rank_numeric": 190,
+      "tied": true,
+      "institution": "University of North Texas"
+    },
+    {
+      "rank": "190T",
+      "rank_numeric": 190,
+      "tied": true,
+      "institution": "Western Michigan University"
+    },
+    {
+      "rank": "204T",
+      "rank_numeric": 204,
+      "tied": true,
+      "institution": "Andrews University"
+    },
+    {
+      "rank": "204T",
+      "rank_numeric": 204,
+      "tied": true,
+      "institution": "Chatham University"
+    },
+    {
+      "rank": "204T",
+      "rank_numeric": 204,
+      "tied": true,
+      "institution": "East Tennessee State University"
+    },
+    {
+      "rank": "204T",
+      "rank_numeric": 204,
+      "tied": true,
+      "institution": "Florida A&M University"
+    },
+    {
+      "rank": "204T",
+      "rank_numeric": 204,
+      "tied": true,
+      "institution": "Illinois State University"
+    },
+    {
+      "rank": "204T",
+      "rank_numeric": 204,
+      "tied": true,
+      "institution": "Immaculata University"
+    },
+    {
+      "rank": "204T",
+      "rank_numeric": 204,
+      "tied": true,
+      "institution": "Lesley University"
+    },
+    {
+      "rank": "204T",
+      "rank_numeric": 204,
+      "tied": true,
+      "institution": "Middle Tennessee State University"
+    },
+    {
+      "rank": "204T",
+      "rank_numeric": 204,
+      "tied": true,
+      "institution": "Morgan State University"
+    },
+    {
+      "rank": "204T",
+      "rank_numeric": 204,
+      "tied": true,
+      "institution": "Northern Arizona University"
+    },
+    {
+      "rank": "204T",
+      "rank_numeric": 204,
+      "tied": true,
+      "institution": "Northern Illinois University"
+    },
+    {
+      "rank": "204T",
+      "rank_numeric": 204,
+      "tied": true,
+      "institution": "Old Dominion University"
+    },
+    {
+      "rank": "204T",
+      "rank_numeric": 204,
+      "tied": true,
+      "institution": "University of Akron"
+    },
+    {
+      "rank": "204T",
+      "rank_numeric": 204,
+      "tied": true,
+      "institution": "University of Colorado—Denver"
+    },
+    {
+      "rank": "204T",
+      "rank_numeric": 204,
+      "tied": true,
+      "institution": "University of Nevada, Las Vegas"
+    },
+    {
+      "rank": "204T",
+      "rank_numeric": 204,
+      "tied": true,
+      "institution": "University of North Carolina—Wilmington"
+    },
+    {
+      "rank": "204T",
+      "rank_numeric": 204,
+      "tied": true,
+      "institution": "Widener University"
+    },
+    {
+      "rank": "221T",
+      "rank_numeric": 221,
+      "tied": true,
+      "institution": "Central Michigan University"
+    },
+    {
+      "rank": "221T",
+      "rank_numeric": 221,
+      "tied": true,
+      "institution": "Clark Atlanta University"
+    },
+    {
+      "rank": "221T",
+      "rank_numeric": 221,
+      "tied": true,
+      "institution": "Idaho State University"
+    },
+    {
+      "rank": "221T",
+      "rank_numeric": 221,
+      "tied": true,
+      "institution": "Indiana State University"
+    },
+    {
+      "rank": "221T",
+      "rank_numeric": 221,
+      "tied": true,
+      "institution": "Louisiana Tech University"
+    },
+    {
+      "rank": "221T",
+      "rank_numeric": 221,
+      "tied": true,
+      "institution": "North Dakota State University"
+    },
+    {
+      "rank": "221T",
+      "rank_numeric": 221,
+      "tied": true,
+      "institution": "Nova Southeastern University"
+    },
+    {
+      "rank": "221T",
+      "rank_numeric": 221,
+      "tied": true,
+      "institution": "Regent University"
+    },
+    {
+      "rank": "221T",
+      "rank_numeric": 221,
+      "tied": true,
+      "institution": "South Carolina State University"
+    },
+    {
+      "rank": "221T",
+      "rank_numeric": 221,
+      "tied": true,
+      "institution": "South Dakota State University"
+    },
+    {
+      "rank": "221T",
+      "rank_numeric": 221,
+      "tied": true,
+      "institution": "Southern Illinois University—Carbondale"
+    },
+    {
+      "rank": "221T",
+      "rank_numeric": 221,
+      "tied": true,
+      "institution": "Tennessee State University"
+    },
+    {
+      "rank": "221T",
+      "rank_numeric": 221,
+      "tied": true,
+      "institution": "Texas State University"
+    },
+    {
+      "rank": "221T",
+      "rank_numeric": 221,
+      "tied": true,
+      "institution": "University of Massachusetts—Boston"
+    },
+    {
+      "rank": "221T",
+      "rank_numeric": 221,
+      "tied": true,
+      "institution": "University of Southern Mississippi"
+    },
+    {
+      "rank": "221T",
+      "rank_numeric": 221,
+      "tied": true,
+      "institution": "University of Toledo"
+    },
+    {
+      "rank": "237T",
+      "rank_numeric": 237,
+      "tied": true,
+      "institution": "Albany State University"
+    },
+    {
+      "rank": "237T",
+      "rank_numeric": 237,
+      "tied": true,
+      "institution": "Boise State University"
+    },
+    {
+      "rank": "237T",
+      "rank_numeric": 237,
+      "tied": true,
+      "institution": "Fayetteville State University"
+    },
+    {
+      "rank": "237T",
+      "rank_numeric": 237,
+      "tied": true,
+      "institution": "Florida Institute of Technology"
+    },
+    {
+      "rank": "237T",
+      "rank_numeric": 237,
+      "tied": true,
+      "institution": "North Carolina A&T State University"
+    },
+    {
+      "rank": "237T",
+      "rank_numeric": 237,
+      "tied": true,
+      "institution": "Tennessee Technological University"
+    },
+    {
+      "rank": "237T",
+      "rank_numeric": 237,
+      "tied": true,
+      "institution": "University of Alaska—Fairbanks"
+    },
+    {
+      "rank": "237T",
+      "rank_numeric": 237,
+      "tied": true,
+      "institution": "University of Michigan—Dearborn"
+    },
+    {
+      "rank": "237T",
+      "rank_numeric": 237,
+      "tied": true,
+      "institution": "University of Texas at Arlington"
+    },
+    {
+      "rank": "237T",
+      "rank_numeric": 237,
+      "tied": true,
+      "institution": "University of Texas at El Paso"
+    },
+    {
+      "rank": "237T",
+      "rank_numeric": 237,
+      "tied": true,
+      "institution": "University of Texas at San Antonio"
+    },
+    {
+      "rank": "237T",
+      "rank_numeric": 237,
+      "tied": true,
+      "institution": "Wichita State University"
+    },
+    {
+      "rank": "237T",
+      "rank_numeric": 237,
+      "tied": true,
+      "institution": "Wright State University"
+    },
+    {
+      "rank": "250T",
+      "rank_numeric": 250,
+      "tied": true,
+      "institution": "California State University, Fresno"
+    }
+  ]
+}
