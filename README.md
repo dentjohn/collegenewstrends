@@ -1,91 +1,82 @@
-# College Intelligence Hub
+# University Signal Intelligence
 
-A daily intelligence feed for college counselors — tracks major developments at US colleges and surfaces them in a clean dashboard with bookmarks, client flagging, and email digests.
+AI-powered institutional signal detection for U.S. universities. Analyzes 10 risk and opportunity categories from real news using Claude with web search.
 
----
+## Live
 
-## Setup (one time, ~10 minutes)
+Visit the deployed site — no setup needed.
 
-### 1. Push to GitHub
+## What it does
 
-Create a new GitHub repository and push this folder:
+Enter any U.S. university and get an instant intelligence briefing covering:
 
-```bash
-cd college-intel
-git init
-git add .
-git commit -m "Initial commit"
-git remote add origin https://github.com/YOUR_USERNAME/college-intel.git
-git push -u origin main
-```
+| Category | What it tracks |
+|---|---|
+| Lost Research Grants | NIH, NSF, federal funding cuts |
+| Major New Grants & Gifts | Philanthropy, awards, donations |
+| Enrollment Growth | Record applications, yield increases |
+| Enrollment Decline | Falling applications, shrinking classes |
+| Leadership Turnover | President, provost, dean changes |
+| Scandals & Investigations | Lawsuits, misconduct, controversies |
+| Budget Cuts & Layoffs | Hiring freezes, deficits, restructuring |
+| Accreditation / Regulatory | Compliance issues, federal scrutiny |
+| Labor & Faculty Unrest | Strikes, union actions, no-confidence |
+| Program Closures | Department cuts, major eliminations |
 
-### 2. Deploy to Netlify
+Each category gets a signal rating (positive / negative / mixed / unclear / none) backed by specific findings from recent news.
 
-1. Go to [app.netlify.com](https://app.netlify.com) → **Add new site → Import an existing project**
-2. Connect GitHub and select your `college-intel` repo
-3. Build settings are auto-detected from `netlify.toml` — no changes needed
-4. Click **Deploy site**
+## Export
 
-### 3. Add your Anthropic API key
-
-1. In Netlify: **Site configuration → Environment variables → Add a variable**
-2. Key: `ANTHROPIC_API_KEY`
-3. Value: your Anthropic API key (starts with `sk-ant-...`)
-4. Click **Save** and trigger a redeploy (Deploys → Trigger deploy)
-
-### 4. Enable Netlify Blobs (shared database)
-
-Netlify Blobs is enabled automatically on any deployed site — no extra steps needed.
-All teammates who visit the URL will share the same college list, intel items, bookmarks, and flags.
-
----
-
-## Usage
-
-- **Refresh All** — runs once per day; calls Anthropic for each tracked college and stores results
-- **+ College** — add any US college to the watchlist
-- **🔖 Bookmark** — save items for your own reference
-- **🚩 Flag for Client** — tag items with a client family name and counselor note
-- **Email Digest** — generate a formatted digest (full feed, flagged only, bookmarks, or negative signals)
-
----
+Click **Export PDF** to download a formatted dark-themed PDF report — generated entirely client-side with zero external libraries.
 
 ## Architecture
 
 ```
-/
-├── index.html                   # Full frontend (HTML/CSS/JS)
-├── netlify.toml                 # Routes /api/* → /.netlify/functions/*
-└── netlify/functions/
-    ├── intel.js                 # POST /api/intel — calls Anthropic API
-    └── db.js                    # GET/POST /api/db  — Netlify Blobs storage
+index.html                     # Frontend (single file, no build step)
+netlify.toml                   # Netlify config
+netlify/functions/analyze.js   # Serverless function (proxies to Anthropic API)
 ```
 
-### Environment variables required
+The frontend calls a Netlify Function which proxies requests to the Anthropic API. The API key is stored as a Netlify environment variable — never exposed to the browser.
 
-| Variable            | Description                        |
-|---------------------|------------------------------------|
-| `ANTHROPIC_API_KEY` | Your Anthropic API key (sk-ant-…) |
+## Deploy your own
 
----
+1. Fork this repo
+2. Connect to Netlify
+3. Add environment variable: `ANTHROPIC_API_KEY` = your key
+4. Deploy — that's it
+
+### Netlify settings
+
+- **Build command**: (leave empty)
+- **Publish directory**: `.`
+- **Functions directory**: `netlify/functions` (auto-detected from `netlify.toml`)
 
 ## Local development
 
 ```bash
+# Install Netlify CLI
 npm install -g netlify-cli
+
+# Set your API key
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# Run locally
 netlify dev
 ```
 
-Then open http://localhost:8888. Set your API key in a `.env` file:
+Open `http://localhost:8888`
 
-```
-ANTHROPIC_API_KEY=sk-ant-...
-```
+## Cost
 
-> Note: Netlify Blobs requires a deployed site for full persistence. In local dev, data is stored in memory and lost on restart. For local persistence, `netlify dev` will use a local Blobs emulator if you're logged into the Netlify CLI.
+Each analysis makes one Claude Sonnet API call with web search. Typical cost is ~$0.05–0.15 per analysis depending on the volume of news found.
 
----
+## Privacy
 
-## Upgrading storage (optional)
+- No user data is stored or logged
+- No analytics or tracking
+- The API key exists only as a Netlify environment variable
 
-The current setup uses Netlify Blobs — a simple key/value store that's free and zero-config. If your team grows and you need more sophisticated querying (e.g., per-user flags, audit logs), the `db.js` function is the only file to change. Drop-in replacements: Supabase, PlanetScale, or Upstash Redis.
+## License
+
+MIT

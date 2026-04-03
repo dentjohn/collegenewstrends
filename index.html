@@ -3,1437 +3,307 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>College Intelligence Hub</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>University Signal Intelligence</title>
+<meta name="description" content="AI-powered institutional signal detection for U.S. universities. Analyze 10 risk and opportunity categories from real news.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:#0a0d12; --surface:#111620; --surface2:#171d2b;
-    --border:#1e2738; --border2:#263044;
-    --accent:#4f8ef7; --accent2:#7c5cfc;
-    --green:#2dd4a0; --red:#f05f6e; --amber:#f5a623; --purple:#b46ef5;
-    --text:#e8edf5; --text2:#8a95a8; --text3:#4a5568;
-    --glow:rgba(79,142,247,0.15);
-  }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
-  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:0.4;}
-  body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;opacity:0.3;}
-  .app{position:relative;z-index:1;}
+:root{
+  --bg:#08090c;--sf:#0f1118;--sf2:#161924;--sf3:#1e2233;--bd:#252a3a;--bdh:#353d55;
+  --t1:#e4e8f4;--t2:#8b93ad;--t3:#545c74;--ac:#5b8def;--acd:rgba(91,141,239,0.1);
+  --pos:#3dd68c;--neg:#ef6b6b;--mix:#e8b44a;--unc:#7e88a4;
+  --posbg:rgba(61,214,140,0.06);--negbg:rgba(239,107,107,0.06);--mixbg:rgba(232,180,74,0.06);--uncbg:rgba(126,136,164,0.06);
+  --posbd:rgba(61,214,140,0.2);--negbd:rgba(239,107,107,0.2);--mixbd:rgba(232,180,74,0.2);--uncbd:rgba(126,136,164,0.2);
+  --serif:'Playfair Display',Georgia,serif;--sans:'Outfit',system-ui,sans-serif;--mono:'IBM Plex Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--bg);color:var(--t1);min-height:100vh}
+::selection{background:var(--ac);color:#fff}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:3px}
+body::before{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:0.03}
 
-  header{border-bottom:1px solid var(--border2);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px;background:rgba(10,13,18,0.85);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100;gap:1rem;}
-  .logo{display:flex;align-items:center;gap:10px;flex-shrink:0;}
-  .logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 16px var(--glow);}
-  .logo-text{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;letter-spacing:-0.3px;}
-  .logo-text span{color:var(--accent);}
-  .header-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-  .last-updated{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;white-space:nowrap;}
-  .status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite;flex-shrink:0;}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.page{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;position:relative}
+.page::before{content:'';position:absolute;top:-20%;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(ellipse,rgba(91,141,239,0.06) 0%,transparent 70%);pointer-events:none}
 
-  .nav-tabs{display:flex;gap:2px;background:var(--surface2);border-radius:7px;padding:3px;flex-shrink:0;}
-  .nav-tab{padding:5px 13px;border-radius:5px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text3);transition:all 0.15s;border:none;background:none;font-family:'DM Sans',sans-serif;white-space:nowrap;}
-  .nav-tab:hover{color:var(--text2);}
-  .nav-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.3);}
-  .tab-badge{display:inline-block;background:var(--red);color:#fff;font-size:9px;border-radius:3px;padding:1px 4px;margin-left:4px;vertical-align:middle;}
+.brand-tag{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--t3);margin-bottom:12px}
+.brand h1{font-family:var(--serif);font-size:clamp(30px,5vw,46px);font-weight:700;letter-spacing:-0.02em;line-height:1.1;margin-bottom:14px}
+.brand p{font-size:15px;color:var(--t2);max-width:520px;margin:0 auto;line-height:1.6;font-weight:300}
 
-  .btn{padding:7px 14px;border-radius:6px;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.15s;border:none;}
-  .btn-primary{background:var(--accent);color:#fff;}
-  .btn-primary:hover{background:#3a7be8;transform:translateY(-1px);}
-  .btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
-  .btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border2);}
-  .btn-ghost:hover{color:var(--text);background:var(--border);}
-  .btn-purple{background:rgba(180,110,245,0.15);color:var(--purple);border:1px solid rgba(180,110,245,0.3);}
-  .btn-purple:hover{background:rgba(180,110,245,0.25);}
-  .btn-sm{padding:4px 10px;font-size:11px;}
+.input-wrap{position:relative;width:100%;max-width:560px;margin-bottom:24px}
+.input-wrap input{width:100%;padding:16px 140px 16px 24px;font-size:16px;font-family:var(--sans);background:var(--sf);border:1px solid var(--bd);border-radius:12px;color:var(--t1);outline:none;transition:border-color .2s,box-shadow .2s}
+.input-wrap input:focus{border-color:var(--ac);box-shadow:0 0 0 3px var(--acd)}
+.input-wrap input::placeholder{color:var(--t3);font-weight:300}
+.input-wrap button{position:absolute;right:6px;top:50%;transform:translateY(-50%);padding:10px 24px;font-family:var(--sans);font-size:14px;font-weight:600;background:var(--ac);color:#fff;border:none;border-radius:8px;cursor:pointer;transition:background .15s}
+.input-wrap button:hover{background:#7ba5f5}
+.input-wrap button:disabled{opacity:0.5;cursor:not-allowed}
 
-  .layout{display:grid;grid-template-columns:256px 1fr;min-height:calc(100vh - 64px);}
+.chips{display:flex;flex-wrap:wrap;gap:8px;max-width:560px;justify-content:center}
+.chip{font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid var(--bd);background:transparent;color:var(--t3);cursor:pointer;transition:all .12s}
+.chip:hover{border-color:var(--ac);color:var(--ac);background:var(--acd)}
 
-  .sidebar{border-right:1px solid var(--border2);padding:1.4rem;background:rgba(17,22,32,0.5);display:flex;flex-direction:column;gap:1.4rem;}
-  .sidebar-section-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:0.5rem;}
-  .search-box{position:relative;}
-  .search-box input{width:100%;padding:8px 12px 8px 30px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s;}
-  .search-box input:focus{border-color:var(--accent);}
-  .search-box input::placeholder{color:var(--text3);}
-  .search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;}
-  .filter-group{display:flex;flex-direction:column;gap:3px;}
-  .filter-chip{padding:6px 9px;border-radius:6px;font-size:12px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:space-between;color:var(--text2);user-select:none;}
-  .filter-chip:hover{background:var(--surface2);color:var(--text);}
-  .filter-chip.active{background:var(--glow);color:var(--accent);border:1px solid rgba(79,142,247,0.3);}
-  .filter-chip .count{font-size:10px;font-family:'DM Mono',monospace;background:var(--surface2);padding:1px 5px;border-radius:3px;}
-  .filter-chip.active .count{background:rgba(79,142,247,0.2);color:var(--accent);}
-  .college-list{display:flex;flex-direction:column;gap:3px;max-height:220px;overflow-y:auto;}
-  .college-item{padding:6px 9px;border-radius:5px;font-size:12px;cursor:pointer;transition:all 0.12s;color:var(--text2);display:flex;align-items:center;justify-content:space-between;}
-  .college-item:hover{background:var(--surface2);color:var(--text);}
-  .college-item.active{background:var(--glow);color:var(--accent);}
-  .tag-filters{display:flex;flex-wrap:wrap;gap:5px;}
-  .tag-btn{font-size:11px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border2);background:var(--surface2);color:var(--text3);transition:all 0.12s;user-select:none;}
-  .tag-btn:hover{color:var(--text);}
-  .tag-btn.active{background:rgba(79,142,247,0.15);color:var(--accent);border-color:rgba(79,142,247,0.4);}
+.progress{position:fixed;inset:0;background:rgba(8,9,12,0.92);backdrop-filter:blur(8px);z-index:500;display:flex;align-items:center;justify-content:center}
+.progress-inner{max-width:520px;width:100%;padding:40px;text-align:center}
+.spinner{width:48px;height:48px;border:3px solid var(--sf3);border-top-color:var(--ac);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 24px}
+@keyframes sp{to{transform:rotate(360deg)}}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:.4}}
+.pstep{display:flex;gap:12px;padding:6px 0;font-size:13px;align-items:flex-start}
+.pdot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;transition:background .3s}
 
-  main{padding:1.8rem;display:flex;flex-direction:column;gap:1.4rem;overflow:auto;}
-  .view{display:none;}
-  .view.active{display:flex;flex-direction:column;gap:1.4rem;}
+.sc{min-height:100vh}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(8,9,12,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--bd);padding:12px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.topbar h2{font-family:var(--serif);font-size:17px;font-weight:600}
+.btn-back{background:none;border:1px solid var(--bd);color:var(--t2);padding:6px 14px;border-radius:6px;font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer;transition:all .12s}
+.btn-back:hover{border-color:var(--t2);color:var(--t1)}
+.btn-pdf{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:7px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.06);color:#f87171;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-pdf:hover{border-color:rgba(239,68,68,0.6);background:rgba(239,68,68,0.12);color:#fca5a5;transform:translateY(-1px);box-shadow:0 4px 16px rgba(239,68,68,0.15)}
 
-  .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:0.9rem;}
-  .stat-card{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:1rem 1.1rem;position:relative;overflow:hidden;}
-  .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
-  .stat-card.blue::before{background:linear-gradient(90deg,var(--accent),var(--accent2));}
-  .stat-card.green::before{background:var(--green);}
-  .stat-card.red::before{background:var(--red);}
-  .stat-card.amber::before{background:var(--amber);}
-  .stat-card.purple::before{background:var(--purple);}
-  .stat-label{font-size:10px;color:var(--text3);font-weight:500;letter-spacing:0.5px;margin-bottom:4px;}
-  .stat-value{font-size:24px;font-family:'Playfair Display',serif;font-weight:700;line-height:1;}
-  .stat-sub{font-size:10px;color:var(--text3);margin-top:3px;}
-  .stat-card.blue .stat-value{color:var(--accent);}
-  .stat-card.green .stat-value{color:var(--green);}
-  .stat-card.red .stat-value{color:var(--red);}
-  .stat-card.amber .stat-value{color:var(--amber);}
-  .stat-card.purple .stat-value{color:var(--purple);}
-
-  .controls-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;}
-  .section-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;}
-  .controls-right{display:flex;gap:8px;align-items:center;}
-  .sort-select{background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text2);font-size:12px;font-family:'DM Sans',sans-serif;padding:6px 10px;outline:none;cursor:pointer;}
-
-  .feed{display:flex;flex-direction:column;gap:0.9rem;}
-  .intel-card{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:1.2rem;display:grid;grid-template-columns:4px 1fr;gap:0 1.1rem;transition:all 0.2s;animation:fadeSlideIn 0.4s ease both;position:relative;}
-  @keyframes fadeSlideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-  .intel-card:hover{background:var(--surface2);box-shadow:0 4px 20px rgba(0,0,0,0.3);transform:translateY(-1px);}
-  .intel-card.flagged-card{border-color:rgba(180,110,245,0.4);}
-  .intel-card.bookmarked-card{border-color:rgba(245,166,35,0.35);}
-  .intel-card.new-item{border-color:rgba(79,142,247,0.4);}
-  .card-stripe{border-radius:4px;}
-  .card-stripe.positive{background:var(--green);}
-  .card-stripe.negative{background:var(--red);}
-  .card-stripe.neutral{background:var(--amber);}
-  .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:0.8rem;margin-bottom:7px;}
-  .card-college{font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent);margin-bottom:3px;}
-  .card-title{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;line-height:1.3;color:var(--text);}
-  .card-meta{display:flex;align-items:center;gap:5px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;}
-  .badge{font-size:10px;font-weight:600;padding:3px 7px;border-radius:4px;letter-spacing:0.4px;text-transform:uppercase;}
-  .badge.positive{background:rgba(45,212,160,0.15);color:var(--green);border:1px solid rgba(45,212,160,0.3);}
-  .badge.negative{background:rgba(240,95,110,0.15);color:var(--red);border:1px solid rgba(240,95,110,0.3);}
-  .badge.neutral{background:rgba(245,166,35,0.15);color:var(--amber);border:1px solid rgba(245,166,35,0.3);}
-  .category-tag{font-size:10px;padding:3px 6px;border-radius:4px;background:var(--surface2);color:var(--text3);border:1px solid var(--border2);}
-  .flag-pill{font-size:10px;padding:3px 7px;border-radius:4px;background:rgba(180,110,245,0.15);color:var(--purple);border:1px solid rgba(180,110,245,0.35);font-weight:600;}
-  .card-summary{font-size:13px;line-height:1.65;color:var(--text2);margin-bottom:9px;}
-  .card-flag-note{font-size:12px;color:var(--purple);font-style:italic;margin-bottom:8px;}
-  .card-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;}
-  .card-footer-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-  .card-date{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;}
-  .card-sources{display:flex;gap:5px;flex-wrap:wrap;}
-  .source-tag{font-size:10px;color:var(--text3);padding:2px 5px;border-radius:3px;background:var(--surface2);font-family:'DM Mono',monospace;}
-  .card-actions{display:flex;gap:4px;flex-shrink:0;}
-  .icon-btn{width:27px;height:27px;border-radius:5px;border:1px solid var(--border2);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all 0.15s;color:var(--text3);}
-  .icon-btn:hover{background:var(--border);color:var(--text);}
-  .icon-btn.active-bookmark{background:rgba(245,166,35,0.15);border-color:rgba(245,166,35,0.4);color:var(--amber);}
-  .icon-btn.active-flag{background:rgba(180,110,245,0.15);border-color:rgba(180,110,245,0.4);color:var(--purple);}
-
-  .empty-state{text-align:center;padding:3.5rem 2rem;color:var(--text3);}
-  .empty-icon{font-size:36px;margin-bottom:1rem;opacity:0.3;}
-  .empty-title{font-family:'Playfair Display',serif;font-size:18px;color:var(--text2);margin-bottom:0.4rem;}
-  .empty-sub{font-size:13px;}
-
-  .loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem;gap:1rem;}
-  .spinner{width:28px;height:28px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .loading-text{font-size:13px;color:var(--text3);font-family:'DM Mono',monospace;}
-  .progress-bar{height:2px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:4px;}
-  .progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 0.3s ease;}
-  .refresh-progress{font-size:11px;color:var(--text3);}
-
-  /* DIGEST */
-  .digest-panel{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:1.6rem;}
-  .digest-panel h3{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:6px;}
-  .digest-panel p{font-size:13px;color:var(--text2);margin-bottom:1.4rem;line-height:1.6;}
-  .digest-options{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem;}
-  .digest-field label{font-size:10px;color:var(--text3);font-weight:600;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:5px;display:block;}
-  .digest-field input,.digest-field select,.digest-field textarea{width:100%;padding:8px 11px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s;resize:vertical;}
-  .digest-field input:focus,.digest-field select:focus,.digest-field textarea:focus{border-color:var(--accent);}
-  .digest-preview{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:1.2rem;margin-top:1.2rem;}
-  .digest-preview-label{font-size:10px;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.7rem;}
-  .email-preview{font-size:12px;line-height:1.8;color:var(--text2);white-space:pre-wrap;font-family:'DM Mono',monospace;max-height:360px;overflow-y:auto;}
-  .copy-flash{color:var(--green);font-size:12px;opacity:0;transition:opacity 0.3s;}
-  .copy-flash.show{opacity:1;}
-
-  /* MODALS */
-  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity 0.2s;}
-  .modal-overlay.open{opacity:1;pointer-events:all;}
-  .modal{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:2rem;width:460px;transform:translateY(10px);transition:transform 0.2s;max-height:90vh;overflow-y:auto;}
-  .modal-overlay.open .modal{transform:translateY(0);}
-  .modal-wide{width:540px;}
-  .modal-title{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;margin-bottom:1.1rem;}
-  .modal-label{font-size:11px;color:var(--text3);font-weight:600;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:5px;}
-  .modal-input{width:100%;padding:9px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:1rem;transition:border-color 0.15s;}
-  .modal-input:focus{border-color:var(--accent);}
-  .modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:0.5rem;}
-  .email-preview-box{background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:1rem;font-size:11px;line-height:1.8;color:var(--text2);font-family:'DM Mono',monospace;white-space:pre-wrap;max-height:320px;overflow-y:auto;margin-top:0.5rem;}
-
-  /* TOAST */
-  .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:11px 16px;font-size:13px;color:var(--text);z-index:999;transform:translateY(10px);opacity:0;transition:all 0.25s;display:flex;align-items:center;gap:8px;box-shadow:0 8px 32px rgba(0,0,0,0.4);}
-  .toast.show{transform:translateY(0);opacity:1;}
-
-  ::-webkit-scrollbar{width:4px;}
-  ::-webkit-scrollbar-track{background:transparent;}
-  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
-
-  .add-tab{flex:1;padding:6px;border-radius:5px;font-size:12px;font-weight:500;cursor:pointer;
-    color:var(--text3);border:none;background:none;font-family:'DM Sans',sans-serif;transition:all 0.15s;}
-  .add-tab:hover{color:var(--text2);}
-  .add-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.3);}
-  .suggestion-item{padding:9px 12px;font-size:13px;cursor:pointer;color:var(--text2);
-    border-bottom:1px solid var(--border);transition:background 0.1s;}
-  .suggestion-item:last-child{border-bottom:none;}
-  .suggestion-item:hover{background:var(--border);color:var(--text);}
-  .suggestion-item .sug-state{font-size:11px;color:var(--text3);margin-left:6px;}
+.sc-body{max-width:900px;margin:0 auto;padding:28px 28px 80px}
+.banner{border-radius:12px;padding:22px 26px;margin-bottom:26px;border:1px solid;overflow:hidden}
+.meta-line{display:flex;gap:14px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.sig-badge{font-family:var(--mono);font-size:11px;font-weight:600;padding:3px 11px;border-radius:5px;text-transform:uppercase;letter-spacing:.05em}
+.meta-tag{font-family:var(--mono);font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.08em}
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:26px}
+.cat-card{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:15px 17px;transition:border-color .2s}
+.cat-card:hover{border-color:var(--bdh)}
+.cat-top{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.cat-lbl{flex:1;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.cat-pill{font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:4px}
+.finding{display:flex;gap:8px;padding:2px 0;align-items:flex-start;font-size:12.5px;color:var(--t2);line-height:1.6;font-weight:300}
+.fdot{width:5px;height:5px;border-radius:50%;margin-top:6px;flex-shrink:0}
+.fu-section{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:18px 22px;margin-bottom:26px}
+.fu-section h3{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);font-weight:600;margin-bottom:10px}
+.fu-item{font-family:var(--mono);font-size:12px;color:var(--t2);padding:4px 0 4px 16px;position:relative}
+.fu-item::before{content:'\2192';position:absolute;left:0;color:var(--t3)}
+.raw-section{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:18px 22px}
+.raw-toggle{font-family:var(--mono);font-size:11px;color:var(--t3);background:none;border:none;cursor:pointer;padding:4px 0}
+.raw-toggle:hover{color:var(--t2)}
+.raw-body{margin-top:12px;font-size:12px;line-height:1.7;color:var(--t2);white-space:pre-wrap;display:none}
+.raw-body.open{display:block}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--sf3);color:var(--t1);padding:10px 20px;border-radius:8px;font-size:13px;border:1px solid var(--bd);z-index:1000;opacity:0;transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:700px){.cat-grid{grid-template-columns:1fr}.sc-body{padding:20px 16px 60px}.topbar{padding:12px 16px}}
 </style>
 </head>
 <body>
-<div class="app">
 
-<header>
-  <div class="logo">
-    <div class="logo-icon">🎓</div>
-    <div class="logo-text">College <span>Intel</span> Hub</div>
+<div id="landingPage" class="page">
+  <div class="brand" style="text-align:center;margin-bottom:44px;position:relative">
+    <div class="brand-tag">Higher-Ed Intelligence</div>
+    <h1>University Signal<br>Scorecard</h1>
+    <p>AI-powered institutional signal detection across 10 risk and opportunity categories. Enter any U.S. university for a real-time intelligence briefing from the last 12 months of news.</p>
   </div>
-
-  <div class="nav-tabs">
-    <button class="nav-tab active" onclick="switchView('feed',this)">Intelligence Feed</button>
-    <button class="nav-tab" onclick="switchView('bookmarks',this)">Bookmarks <span class="tab-badge" id="bookmarkBadge" style="display:none">0</span></button>
-    <button class="nav-tab" onclick="switchView('flagged',this)">Flagged for Clients <span class="tab-badge" id="flagBadge" style="display:none">0</span></button>
-    <button class="nav-tab" onclick="switchView('digest',this)">Email Digest</button>
+  <div class="input-wrap">
+    <input type="text" id="schoolInput" placeholder="e.g. Harvard University, Ohio State, MIT..." autocomplete="off">
+    <button id="analyzeBtn" onclick="startAnalysis()">Analyze</button>
   </div>
-
-  <div class="header-right">
-    <div class="status-dot"></div>
-    <div class="last-updated" id="lastUpdatedLabel">Last updated: —</div>
-    <button class="btn btn-ghost btn-sm" onclick="openModal('addCollege')">+ College</button>
-    <button class="btn btn-primary" id="refreshBtn" onclick="runDailyRefresh()">⟳ Refresh All</button>
-  </div>
-</header>
-
-<div class="layout">
-  <aside class="sidebar">
-    <div>
-      <div class="sidebar-section-label">Search</div>
-      <div class="search-box">
-        <span class="search-icon">⌕</span>
-        <input type="text" id="searchInput" placeholder="Search headlines..." oninput="renderFeed()">
-      </div>
-    </div>
-    <div>
-      <div class="sidebar-section-label">Sentiment</div>
-      <div class="filter-group">
-        <div class="filter-chip active" data-sentiment="all" onclick="setSentimentFilter('all',this)">All Signals <span class="count" id="countAll">0</span></div>
-        <div class="filter-chip" data-sentiment="positive" onclick="setSentimentFilter('positive',this)">🟢 Positive <span class="count" id="countPositive">0</span></div>
-        <div class="filter-chip" data-sentiment="negative" onclick="setSentimentFilter('negative',this)">🔴 Negative <span class="count" id="countNegative">0</span></div>
-        <div class="filter-chip" data-sentiment="neutral" onclick="setSentimentFilter('neutral',this)">🟡 Noteworthy <span class="count" id="countNeutral">0</span></div>
-      </div>
-    </div>
-    <div>
-      <div class="sidebar-section-label">Categories</div>
-      <div class="tag-filters" id="tagFilters"></div>
-    </div>
-    <div style="flex:1;min-height:0;">
-      <div class="sidebar-section-label">Tracked Colleges</div>
-      <div class="college-list" id="collegeList"></div>
-    </div>
-  </aside>
-
-  <main>
-
-    <!-- FEED VIEW -->
-    <div class="view active" id="view-feed">
-      <div class="stats-row">
-        <div class="stat-card blue"><div class="stat-label">Total Intel</div><div class="stat-value" id="statTotal">0</div><div class="stat-sub">all colleges</div></div>
-        <div class="stat-card green"><div class="stat-label">Positive</div><div class="stat-value" id="statPos">0</div><div class="stat-sub">signals</div></div>
-        <div class="stat-card red"><div class="stat-label">Negative</div><div class="stat-value" id="statNeg">0</div><div class="stat-sub">signals</div></div>
-        <div class="stat-card amber"><div class="stat-label">Bookmarked</div><div class="stat-value" id="statBook">0</div><div class="stat-sub">saved items</div></div>
-        <div class="stat-card purple"><div class="stat-label">Flagged</div><div class="stat-value" id="statFlag">0</div><div class="stat-sub">for clients</div></div>
-      </div>
-      <div class="controls-row">
-        <div class="section-title" id="feedTitle">Intelligence Feed</div>
-        <div class="controls-right">
-          <select class="sort-select" id="sortSelect" onchange="renderFeed()">
-            <option value="newest">Newest First</option>
-            <option value="oldest">Oldest First</option>
-            <option value="college">By College</option>
-            <option value="sentiment">By Sentiment</option>
-          </select>
-        </div>
-      </div>
-      <div class="feed" id="feedContainer">
-        <div class="empty-state"><div class="empty-icon">🔭</div><div class="empty-title">No intelligence gathered yet</div><div class="empty-sub">Add colleges and click "Refresh All" to pull today's news.</div></div>
-      </div>
-    </div>
-
-    <!-- BOOKMARKS VIEW -->
-    <div class="view" id="view-bookmarks">
-      <div class="controls-row">
-        <div class="section-title">Saved Bookmarks</div>
-        <button class="btn btn-ghost btn-sm" onclick="clearBookmarks()">Clear All</button>
-      </div>
-      <div class="feed" id="bookmarkContainer">
-        <div class="empty-state"><div class="empty-icon">🔖</div><div class="empty-title">No bookmarks yet</div><div class="empty-sub">Click the 🔖 icon on any card to save it here.</div></div>
-      </div>
-    </div>
-
-    <!-- FLAGGED VIEW -->
-    <div class="view" id="view-flagged">
-      <div class="controls-row">
-        <div class="section-title">Flagged for Clients</div>
-        <div class="controls-right">
-          <button class="btn btn-purple btn-sm" onclick="openDigestModal('flagged')">📧 Email Flagged Items</button>
-          <button class="btn btn-ghost btn-sm" onclick="clearFlags()">Clear All Flags</button>
-        </div>
-      </div>
-      <div id="flaggedContainer">
-        <div class="empty-state"><div class="empty-icon">🚩</div><div class="empty-title">Nothing flagged yet</div><div class="empty-sub">Click the 🚩 icon on any card to flag it for a specific client.</div></div>
-      </div>
-    </div>
-
-    <!-- DIGEST VIEW -->
-    <div class="view" id="view-digest">
-      <div class="section-title">Email Digest</div>
-      <div class="digest-panel">
-        <h3>Generate a Daily Digest</h3>
-        <p>Produces a clean, formatted digest you can paste into Gmail or any email client. Choose full feed, flagged items, bookmarks, or negative signals only.</p>
-        <div class="digest-options">
-          <div class="digest-field">
-            <label>Scope</label>
-            <select id="digestScope">
-              <option value="all">All Items — Today</option>
-              <option value="flagged">Flagged for Clients Only</option>
-              <option value="bookmarked">Bookmarked Only</option>
-              <option value="negative">Negative Signals Only</option>
-            </select>
-          </div>
-          <div class="digest-field">
-            <label>Subject Line</label>
-            <input type="text" id="digestSubject" value="College Intel Daily Digest">
-          </div>
-          <div class="digest-field" style="grid-column:1/-1;">
-            <label>Intro Note (optional)</label>
-            <textarea id="digestIntro" rows="2" placeholder="Add a short note to your team or clients..."></textarea>
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="generateDigest()">Generate Digest</button>
-        <div id="digestPreviewArea" style="display:none;" class="digest-preview">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.7rem;">
-            <div class="digest-preview-label">📋 Preview</div>
-            <div style="display:flex;gap:8px;align-items:center;">
-              <span class="copy-flash" id="copyFlash">✓ Copied!</span>
-              <button class="btn btn-ghost btn-sm" onclick="copyDigest()">Copy</button>
-              <button class="btn btn-purple btn-sm" onclick="openDigestModal('current')">Open Email Draft</button>
-            </div>
-          </div>
-          <div class="email-preview" id="digestPreviewText"></div>
-        </div>
-      </div>
-    </div>
-
-  </main>
+  <div class="chips" id="chips"></div>
 </div>
 
-<!-- ADD COLLEGE MODAL -->
-<div class="modal-overlay" id="modal-addCollege">
-  <div class="modal" style="width:520px;">
-    <div class="modal-title">Add Colleges</div>
-
-    <!-- Tab switcher -->
-    <div style="display:flex;gap:2px;background:var(--surface2);border-radius:7px;padding:3px;margin-bottom:1.4rem;">
-      <button class="add-tab active" id="addTab-search" onclick="switchAddTab('search')">🔍 Search by Name</button>
-      <button class="add-tab" id="addTab-csv" onclick="switchAddTab('csv')">📄 Upload CSV</button>
-      <button class="add-tab" id="addTab-import" onclick="switchAddTab('import')">📥 Import Intel</button>
-    </div>
-
-    <!-- SEARCH TAB -->
-    <div id="addPanel-search">
-      <div class="modal-label">College Name</div>
-      <div style="display:flex;gap:8px;margin-bottom:0.8rem;">
-        <input class="modal-input" id="collegeNameInput" type="text"
-               placeholder="e.g. Skidmore College"
-               oninput="searchColleges(this.value)"
-               onkeydown="if(event.key==='Enter')addCollegeFromSearch()"
-               style="margin-bottom:0;flex:1;">
-        <button class="btn btn-primary" onclick="addCollegeFromSearch()">Add</button>
-      </div>
-      <!-- Suggestions dropdown -->
-      <div id="collegeSuggestions" style="display:none;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;max-height:200px;overflow-y:auto;margin-bottom:0.8rem;"></div>
-      <div id="searchStatus" style="font-size:11px;color:var(--text3);min-height:16px;"></div>
-    </div>
-
-    <!-- CSV TAB -->
-    <div id="addPanel-csv" style="display:none;">
-      <p style="font-size:13px;color:var(--text2);margin-bottom:1rem;line-height:1.6;">
-        Upload a CSV file with college names. The file should have a column named
-        <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;">name</code> or
-        <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;">college</code>
-        (or just put one college per line with no header).
-      </p>
-      <div id="csvDropZone" style="border:2px dashed var(--border2);border-radius:8px;padding:2rem;text-align:center;cursor:pointer;transition:border-color 0.15s;margin-bottom:1rem;"
-           onclick="document.getElementById('csvFileInput').click()"
-           ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
-           ondragleave="this.style.borderColor='var(--border2)'"
-           ondrop="handleCsvDrop(event)">
-        <div style="font-size:28px;margin-bottom:8px;">📄</div>
-        <div style="font-size:13px;color:var(--text2);">Drop CSV here or <span style="color:var(--accent);">click to browse</span></div>
-        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Accepts .csv or .txt files</div>
-      </div>
-      <input type="file" id="csvFileInput" accept=".csv,.txt" style="display:none;" onchange="handleCsvFile(this.files[0])">
-      <div id="csvPreview" style="display:none;">
-        <div style="font-size:11px;color:var(--text3);font-weight:600;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:6px;">Preview</div>
-        <div id="csvPreviewList" style="background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:0.8rem;max-height:160px;overflow-y:auto;font-size:12px;color:var(--text2);line-height:1.8;"></div>
-        <div id="csvPreviewCount" style="font-size:11px;color:var(--text3);margin-top:6px;"></div>
-      </div>
-    </div>
-
-    <!-- IMPORT INTEL TAB -->
-    <div id="addPanel-import" style="display:none;">
-      <p style="font-size:13px;color:var(--text2);margin-bottom:1rem;line-height:1.6;">
-        Upload a <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;">.txt</code> or
-        <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;">.docx</code> file
-        containing college news or research from a separate Claude chat.
-        The hub will parse the content and add it directly to your intel feed.
-      </p>
-      <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:1rem;margin-bottom:1rem;font-size:12px;color:var(--text3);line-height:1.7;">
-        <strong style="color:var(--text2);">Suggested Claude prompt to use in a separate chat:</strong><br>
-        "Research recent news and developments at [College Name]. For each item, provide: a short headline, a 2-3 sentence summary, whether the news is positive/negative/neutral, the category (Admissions/Leadership/Financials/Rankings/Campus Life/Academics/Athletics/Research/Controversy/Policy), and your source. Format each item clearly separated by ---"
-      </div>
-      <div id="importDropZone" style="border:2px dashed var(--border2);border-radius:8px;padding:2rem;text-align:center;cursor:pointer;transition:border-color 0.15s;margin-bottom:1rem;"
-           onclick="document.getElementById('importFileInput').click()"
-           ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
-           ondragleave="this.style.borderColor='var(--border2)'"
-           ondrop="handleImportDrop(event)">
-        <div style="font-size:28px;margin-bottom:8px;">📥</div>
-        <div style="font-size:13px;color:var(--text2);">Drop .txt or .docx here or <span style="color:var(--accent);">click to browse</span></div>
-      </div>
-      <input type="file" id="importFileInput" accept=".txt,.docx" style="display:none;" onchange="handleImportFile(this.files[0])">
-
-      <!-- College assignment -->
-      <div id="importCollegeSelect" style="display:none;margin-bottom:1rem;">
-        <div class="modal-label">Assign to College</div>
-        <select id="importCollegeName" class="modal-input" style="margin-bottom:0;">
-          <option value="">— select a college —</option>
-        </select>
-        <div style="font-size:11px;color:var(--text3);margin-top:5px;">Or type a new college name:</div>
-        <input type="text" id="importCollegeNameCustom" class="modal-input" placeholder="e.g. Bates College" style="margin-top:6px;margin-bottom:0;">
-      </div>
-
-      <!-- Parsed preview -->
-      <div id="importPreview" style="display:none;">
-        <div style="font-size:11px;color:var(--text3);font-weight:600;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:6px;">Parsed Items</div>
-        <div id="importPreviewList" style="background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:0.8rem;max-height:180px;overflow-y:auto;font-size:12px;color:var(--text2);line-height:1.8;"></div>
-        <div id="importPreviewCount" style="font-size:11px;color:var(--text3);margin-top:6px;"></div>
-      </div>
-
-      <div id="importStatus" style="font-size:12px;color:var(--text3);margin-top:8px;min-height:16px;"></div>
-    </div>
-
-    <div class="modal-footer" style="margin-top:1.2rem;">
-      <button class="btn btn-ghost" onclick="closeModal('addCollege')">Close</button>
-      <button class="btn btn-primary" id="csvImportBtn" onclick="importFromCsv()" style="display:none;">Import Colleges</button>
-      <button class="btn btn-primary" id="intelImportBtn" onclick="importIntelItems()" style="display:none;">Add to Feed</button>
-    </div>
+<div id="progressPage" class="progress" style="display:none">
+  <div class="progress-inner">
+    <div class="spinner"></div>
+    <h2 id="progSchool" style="font-family:var(--serif);font-size:22px;margin-bottom:8px"></h2>
+    <div style="color:var(--t2);font-size:13px;margin-bottom:32px;font-weight:300">Scanning news sources across 10 signal categories</div>
+    <div id="progSteps" style="text-align:left;max-width:380px;margin:0 auto"></div>
   </div>
 </div>
 
-<!-- FLAG FOR CLIENT MODAL -->
-<div class="modal-overlay" id="modal-flagClient">
-  <div class="modal">
-    <div class="modal-title">🚩 Flag for Client</div>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:1.2rem;line-height:1.5;" id="flagItemTitle"></p>
-    <div class="modal-label">Client Name</div>
-    <input class="modal-input" id="flagClientName" type="text" placeholder="e.g. Smith Family" onkeydown="if(event.key==='Enter')confirmFlag()">
-    <div class="modal-label">Counselor Note (optional)</div>
-    <input class="modal-input" id="flagNote" type="text" placeholder="Why this matters for this client...">
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('flagClient')">Cancel</button>
-      <button class="btn btn-purple" onclick="confirmFlag()">Flag Item</button>
+<div id="scorecardPage" class="sc" style="display:none">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:14px">
+      <button class="btn-back" onclick="goBack()">&#8592; New Search</button>
+      <h2 id="scName"></h2>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn-pdf" onclick="exportPDF()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+        Export PDF
+      </button>
     </div>
   </div>
+  <div class="sc-body" id="scBody"></div>
 </div>
 
-<!-- EMAIL DRAFT MODAL -->
-<div class="modal-overlay" id="modal-emailDraft">
-  <div class="modal modal-wide">
-    <div class="modal-title">📧 Email Draft</div>
-    <div class="modal-label">To</div>
-    <input class="modal-input" id="emailTo" type="email" placeholder="recipient@email.com">
-    <div class="modal-label">Subject</div>
-    <input class="modal-input" id="emailSubject" type="text">
-    <div class="modal-label">Body — copy this into your email client</div>
-    <div class="email-preview-box" id="emailBody"></div>
-    <div class="modal-footer" style="margin-top:1rem;">
-      <button class="btn btn-ghost" onclick="closeModal('emailDraft')">Close</button>
-      <button class="btn btn-ghost" onclick="copyEmailBody()">Copy Body</button>
-      <button class="btn btn-primary" onclick="openMailto()">Open in Mail App</button>
-    </div>
-  </div>
-</div>
-
-<!-- TOAST -->
-<div class="toast" id="toast">
-  <span id="toastIcon">✓</span>
-  <span id="toastMsg">Done</span>
-</div>
-
-</div>
+<div class="toast" id="toast"></div>
 
 <script>
-// ── GLOBAL STATE ──────────────────────────────────────────
-let state = {
-  colleges: [], items: [],
-  sentimentFilter: 'all', collegeFilter: null, categoryFilter: null,
-  lastUpdated: null, currentView: 'feed',
-  pendingFlagItemId: null, lastDigestText: ''
-};
+/* ═══ STATE ═══ */
+let currentData=null,currentSchool='',currentRaw='';
 
-// ── PERSISTENCE (localStorage) ───────────────────────────
-function save() {
-  try {
-    localStorage.setItem('cih_colleges', JSON.stringify(state.colleges));
-    localStorage.setItem('cih_items',    JSON.stringify(state.items));
-    localStorage.setItem('cih_updated',  state.lastUpdated || '');
-  } catch(e) { console.error('Save error:', e); }
-}
-
-function load() {
-  try {
-    const c = localStorage.getItem('cih_colleges');
-    const i = localStorage.getItem('cih_items');
-    const u = localStorage.getItem('cih_updated');
-    if (c) state.colleges    = JSON.parse(c);
-    if (i) state.items       = JSON.parse(i);
-    if (u) state.lastUpdated = u;
-  } catch(e) { console.error('Load error:', e); }
-}
-
-// ── TOAST ─────────────────────────────────────────────────
-let toastTimer;
-function showToast(msg, icon='✓') {
-  document.getElementById('toastMsg').textContent = msg;
-  document.getElementById('toastIcon').textContent = icon;
-  const t = document.getElementById('toast');
-  t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
-}
-
-// ── MODAL ─────────────────────────────────────────────────
-function openModal(id) {
-  document.getElementById('modal-'+id).classList.add('open');
-  const f = document.querySelector('#modal-'+id+' input');
-  if (f) setTimeout(() => f.focus(), 80);
-}
-function closeModal(id) { document.getElementById('modal-'+id).classList.remove('open'); }
-document.querySelectorAll('.modal-overlay').forEach(el =>
-  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); })
-);
-
-// ── VIEW SWITCHER ─────────────────────────────────────────
-function switchView(id, btn) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('view-'+id).classList.add('active');
-  btn.classList.add('active');
-  state.currentView = id;
-  if (id === 'bookmarks') renderBookmarks();
-  if (id === 'flagged')   renderFlagged();
-}
-
-// ── ADD COLLEGE ───────────────────────────────────────────
-// ── ADD COLLEGE (search + CSV) ────────────────────────────
-
-// Known US colleges list for autocomplete (top ~300)
-const COLLEGE_LIST = [
-  {name:"Amherst College",state:"Massachusetts"},
-  {name:"Auburn University",state:"Alabama"},
-  {name:"Babson College",state:"Massachusetts"},
-  {name:"Barnard College",state:"New York"},
-  {name:"Bates College",state:"Maine"},
-  {name:"Baylor University",state:"Texas"},
-  {name:"Bennington College",state:"Vermont"},
-  {name:"Boston College",state:"Massachusetts"},
-  {name:"Boston University",state:"Massachusetts"},
-  {name:"Bowdoin College",state:"Maine"},
-  {name:"Brandeis University",state:"Massachusetts"},
-  {name:"Brown University",state:"Rhode Island"},
-  {name:"Bryn Mawr College",state:"Pennsylvania"},
-  {name:"Bucknell University",state:"Pennsylvania"},
-  {name:"California Institute of Technology",state:"California"},
-  {name:"Carnegie Mellon University",state:"Pennsylvania"},
-  {name:"Case Western Reserve University",state:"Ohio"},
-  {name:"Claremont McKenna College",state:"California"},
-  {name:"Clark University",state:"Massachusetts"},
-  {name:"Colby College",state:"Maine"},
-  {name:"Colgate University",state:"New York"},
-  {name:"College of the Holy Cross",state:"Massachusetts"},
-  {name:"College of William & Mary",state:"Virginia"},
-  {name:"Colorado College",state:"Colorado"},
-  {name:"Columbia University",state:"New York"},
-  {name:"Connecticut College",state:"Connecticut"},
-  {name:"Cornell University",state:"New York"},
-  {name:"Dartmouth College",state:"New Hampshire"},
-  {name:"Davidson College",state:"North Carolina"},
-  {name:"Denison University",state:"Ohio"},
-  {name:"DePauw University",state:"Indiana"},
-  {name:"Dickinson College",state:"Pennsylvania"},
-  {name:"Drew University",state:"New Jersey"},
-  {name:"Drexel University",state:"Pennsylvania"},
-  {name:"Duke University",state:"North Carolina"},
-  {name:"Elon University",state:"North Carolina"},
-  {name:"Emerson College",state:"Massachusetts"},
-  {name:"Emory University",state:"Georgia"},
-  {name:"Fairfield University",state:"Connecticut"},
-  {name:"Florida State University",state:"Florida"},
-  {name:"Fordham University",state:"New York"},
-  {name:"Franklin & Marshall College",state:"Pennsylvania"},
-  {name:"Furman University",state:"South Carolina"},
-  {name:"George Washington University",state:"District of Columbia"},
-  {name:"Georgetown University",state:"District of Columbia"},
-  {name:"Georgia Institute of Technology",state:"Georgia"},
-  {name:"Gettysburg College",state:"Pennsylvania"},
-  {name:"Gonzaga University",state:"Washington"},
-  {name:"Grinnell College",state:"Iowa"},
-  {name:"Hamilton College",state:"New York"},
-  {name:"Hampshire College",state:"Massachusetts"},
-  {name:"Harvard University",state:"Massachusetts"},
-  {name:"Harvey Mudd College",state:"California"},
-  {name:"Haverford College",state:"Pennsylvania"},
-  {name:"High Point University",state:"North Carolina"},
-  {name:"Hobart and William Smith Colleges",state:"New York"},
-  {name:"Hofstra University",state:"New York"},
-  {name:"Howard University",state:"District of Columbia"},
-  {name:"Indiana University Bloomington",state:"Indiana"},
-  {name:"Ithaca College",state:"New York"},
-  {name:"Johns Hopkins University",state:"Maryland"},
-  {name:"Juniata College",state:"Pennsylvania"},
-  {name:"Kalamazoo College",state:"Michigan"},
-  {name:"Kenyon College",state:"Ohio"},
-  {name:"Lafayette College",state:"Pennsylvania"},
-  {name:"Lawrence University",state:"Wisconsin"},
-  {name:"Lehigh University",state:"Pennsylvania"},
-  {name:"Lewis & Clark College",state:"Oregon"},
-  {name:"Loyola Marymount University",state:"California"},
-  {name:"Loyola University Chicago",state:"Illinois"},
-  {name:"Loyola University Maryland",state:"Maryland"},
-  {name:"Macalester College",state:"Minnesota"},
-  {name:"Manhattan College",state:"New York"},
-  {name:"Marist College",state:"New York"},
-  {name:"Massachusetts Institute of Technology",state:"Massachusetts"},
-  {name:"Miami University",state:"Ohio"},
-  {name:"Michigan State University",state:"Michigan"},
-  {name:"Middlebury College",state:"Vermont"},
-  {name:"Mount Holyoke College",state:"Massachusetts"},
-  {name:"Muhlenberg College",state:"Pennsylvania"},
-  {name:"New York University",state:"New York"},
-  {name:"Northeastern University",state:"Massachusetts"},
-  {name:"Northwestern University",state:"Illinois"},
-  {name:"Oberlin College",state:"Ohio"},
-  {name:"Occidental College",state:"California"},
-  {name:"Ohio State University",state:"Ohio"},
-  {name:"Ohio Wesleyan University",state:"Ohio"},
-  {name:"Penn State University",state:"Pennsylvania"},
-  {name:"Pepperdine University",state:"California"},
-  {name:"Pitzer College",state:"California"},
-  {name:"Pomona College",state:"California"},
-  {name:"Princeton University",state:"New Jersey"},
-  {name:"Providence College",state:"Rhode Island"},
-  {name:"Purdue University",state:"Indiana"},
-  {name:"Reed College",state:"Oregon"},
-  {name:"Rensselaer Polytechnic Institute",state:"New York"},
-  {name:"Rhode Island School of Design",state:"Rhode Island"},
-  {name:"Rhodes College",state:"Tennessee"},
-  {name:"Rice University",state:"Texas"},
-  {name:"Rochester Institute of Technology",state:"New York"},
-  {name:"Rollins College",state:"Florida"},
-  {name:"Rose-Hulman Institute of Technology",state:"Indiana"},
-  {name:"Rutgers University",state:"New Jersey"},
-  {name:"Saint Louis University",state:"Missouri"},
-  {name:"Santa Clara University",state:"California"},
-  {name:"Sarah Lawrence College",state:"New York"},
-  {name:"Scripps College",state:"California"},
-  {name:"Sewanee: The University of the South",state:"Tennessee"},
-  {name:"Siena College",state:"New York"},
-  {name:"Skidmore College",state:"New York"},
-  {name:"Smith College",state:"Massachusetts"},
-  {name:"Southern Methodist University",state:"Texas"},
-  {name:"Spelman College",state:"Georgia"},
-  {name:"St. John's University",state:"New York"},
-  {name:"St. Lawrence University",state:"New York"},
-  {name:"St. Michael's College",state:"Vermont"},
-  {name:"St. Olaf College",state:"Minnesota"},
-  {name:"Stanford University",state:"California"},
-  {name:"Stetson University",state:"Florida"},
-  {name:"Stevens Institute of Technology",state:"New Jersey"},
-  {name:"Stonehill College",state:"Massachusetts"},
-  {name:"Stony Brook University",state:"New York"},
-  {name:"Suffolk University",state:"Massachusetts"},
-  {name:"Swarthmore College",state:"Pennsylvania"},
-  {name:"Syracuse University",state:"New York"},
-  {name:"Temple University",state:"Pennsylvania"},
-  {name:"Texas A&M University",state:"Texas"},
-  {name:"Texas Christian University",state:"Texas"},
-  {name:"The College of New Jersey",state:"New Jersey"},
-  {name:"Trinity College",state:"Connecticut"},
-  {name:"Trinity University",state:"Texas"},
-  {name:"Tufts University",state:"Massachusetts"},
-  {name:"Tulane University",state:"Louisiana"},
-  {name:"Union College",state:"New York"},
-  {name:"United States Military Academy",state:"New York"},
-  {name:"United States Naval Academy",state:"Maryland"},
-  {name:"University of Alabama",state:"Alabama"},
-  {name:"University of Arizona",state:"Arizona"},
-  {name:"University of California Berkeley",state:"California"},
-  {name:"University of California Davis",state:"California"},
-  {name:"University of California Irvine",state:"California"},
-  {name:"University of California Los Angeles",state:"California"},
-  {name:"University of California San Diego",state:"California"},
-  {name:"University of California Santa Barbara",state:"California"},
-  {name:"University of California Santa Cruz",state:"California"},
-  {name:"University of Chicago",state:"Illinois"},
-  {name:"University of Colorado Boulder",state:"Colorado"},
-  {name:"University of Connecticut",state:"Connecticut"},
-  {name:"University of Dallas",state:"Texas"},
-  {name:"University of Delaware",state:"Delaware"},
-  {name:"University of Denver",state:"Colorado"},
-  {name:"University of Florida",state:"Florida"},
-  {name:"University of Georgia",state:"Georgia"},
-  {name:"University of Illinois Urbana-Champaign",state:"Illinois"},
-  {name:"University of Iowa",state:"Iowa"},
-  {name:"University of Kansas",state:"Kansas"},
-  {name:"University of Kentucky",state:"Kentucky"},
-  {name:"University of Maryland",state:"Maryland"},
-  {name:"University of Massachusetts Amherst",state:"Massachusetts"},
-  {name:"University of Miami",state:"Florida"},
-  {name:"University of Michigan",state:"Michigan"},
-  {name:"University of Minnesota",state:"Minnesota"},
-  {name:"University of Mississippi",state:"Mississippi"},
-  {name:"University of Missouri",state:"Missouri"},
-  {name:"University of New Hampshire",state:"New Hampshire"},
-  {name:"University of North Carolina Chapel Hill",state:"North Carolina"},
-  {name:"University of Notre Dame",state:"Indiana"},
-  {name:"University of Oregon",state:"Oregon"},
-  {name:"University of Pennsylvania",state:"Pennsylvania"},
-  {name:"University of Pittsburgh",state:"Pennsylvania"},
-  {name:"University of Puget Sound",state:"Washington"},
-  {name:"University of Rhode Island",state:"Rhode Island"},
-  {name:"University of Richmond",state:"Virginia"},
-  {name:"University of Rochester",state:"New York"},
-  {name:"University of San Diego",state:"California"},
-  {name:"University of San Francisco",state:"California"},
-  {name:"University of South Carolina",state:"South Carolina"},
-  {name:"University of Southern California",state:"California"},
-  {name:"University of Tennessee",state:"Tennessee"},
-  {name:"University of Texas at Austin",state:"Texas"},
-  {name:"University of Utah",state:"Utah"},
-  {name:"University of Vermont",state:"Vermont"},
-  {name:"University of Virginia",state:"Virginia"},
-  {name:"University of Washington",state:"Washington"},
-  {name:"University of Wisconsin Madison",state:"Wisconsin"},
-  {name:"Ursinus College",state:"Pennsylvania"},
-  {name:"Vanderbilt University",state:"Tennessee"},
-  {name:"Vassar College",state:"New York"},
-  {name:"Villanova University",state:"Pennsylvania"},
-  {name:"Virginia Tech",state:"Virginia"},
-  {name:"Wake Forest University",state:"North Carolina"},
-  {name:"Washington & Jefferson College",state:"Pennsylvania"},
-  {name:"Washington and Lee University",state:"Virginia"},
-  {name:"Washington University in St. Louis",state:"Missouri"},
-  {name:"Wellesley College",state:"Massachusetts"},
-  {name:"Wesleyan University",state:"Connecticut"},
-  {name:"Wheaton College",state:"Massachusetts"},
-  {name:"Whitman College",state:"Washington"},
-  {name:"William & Mary",state:"Virginia"},
-  {name:"Williams College",state:"Massachusetts"},
-  {name:"Worcester Polytechnic Institute",state:"Massachusetts"},
-  {name:"Xavier University",state:"Ohio"},
-  {name:"Yale University",state:"Connecticut"},
+const CATS=[
+  {id:'lost_research_grants',label:'Lost Research Grants',icon:'\uD83D\uDD2C'},
+  {id:'major_new_grants',label:'Major New Grants & Gifts',icon:'\uD83D\uDCB0'},
+  {id:'enrollment_increase',label:'Enrollment Growth',icon:'\uD83D\uDCC8'},
+  {id:'enrollment_decline',label:'Enrollment Decline',icon:'\uD83D\uDCC9'},
+  {id:'senior_admin_turnover',label:'Leadership Turnover',icon:'\uD83D\uDD04'},
+  {id:'scandals',label:'Scandals & Investigations',icon:'\u26A0\uFE0F'},
+  {id:'budget_cuts',label:'Budget Cuts & Layoffs',icon:'\u2702\uFE0F'},
+  {id:'accreditation_regulatory',label:'Accreditation / Regulatory',icon:'\uD83D\uDCCB'},
+  {id:'labor_unrest',label:'Labor & Faculty Unrest',icon:'\u270A'},
+  {id:'program_closures',label:'Program Closures',icon:'\uD83D\uDEAA'},
 ];
+const CHIPS=['Harvard University','Stanford University','Ohio State University','University of Florida','NYU','West Virginia University','Howard University','Temple University'];
+const SM={positive:'pos',negative:'neg',mixed:'mix',unclear:'unc'};
+const SCOL={pos:'#3dd68c',neg:'#ef6b6b',mix:'#e8b44a',unc:'#7e88a4'};
 
-let pendingCsvColleges = [];
+/* ═══ UTILITIES ═══ */
+function show(id){document.getElementById(id).style.display='';}
+function hide(id){document.getElementById(id).style.display='none';}
+function flash(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+function h(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):''}
 
-function switchAddTab(tab) {
-  document.querySelectorAll('.add-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('addTab-'+tab).classList.add('active');
-  document.getElementById('addPanel-search').style.display = tab === 'search' ? '' : 'none';
-  document.getElementById('addPanel-csv').style.display    = tab === 'csv'    ? '' : 'none';
-  document.getElementById('addPanel-import').style.display = tab === 'import' ? '' : 'none';
-  document.getElementById('csvImportBtn').style.display    = tab === 'csv' && pendingCsvColleges.length ? '' : 'none';
-  document.getElementById('intelImportBtn').style.display  = tab === 'import' && pendingIntelItems.length ? '' : 'none';
-}
+/* ═══ LANDING ═══ */
+document.getElementById('chips').innerHTML=CHIPS.map(s=>`<button class="chip" onclick="pickChip('${s}')">${s}</button>`).join('');
+function pickChip(s){document.getElementById('schoolInput').value=s;startAnalysis();}
+document.getElementById('schoolInput').addEventListener('keydown',e=>{if(e.key==='Enter')startAnalysis();});
 
-function searchColleges(query) {
-  const box  = document.getElementById('collegeSuggestions');
-  const stat = document.getElementById('searchStatus');
-  query = query.trim();
-  if (query.length < 2) { box.style.display = 'none'; stat.textContent = ''; return; }
-  const q = query.toLowerCase();
-  const matches = COLLEGE_LIST.filter(c => c.name.toLowerCase().includes(q)).slice(0, 8);
-  if (!matches.length) {
-    box.style.display = 'none';
-    stat.textContent = 'No matches — you can still add it manually by pressing Add.';
-    return;
-  }
-  stat.textContent = '';
-  box.innerHTML = matches.map(c =>
-    `<div class="suggestion-item" onclick="selectSuggestion('${c.name.replace(/'/g,"\\'")}','${c.state.replace(/'/g,"\\'")}')">
-      ${c.name}<span class="sug-state">${c.state}</span>
-    </div>`
-  ).join('');
-  box.style.display = '';
-}
+/* ═══ ANALYSIS ═══ */
+async function startAnalysis(){
+  const name=document.getElementById('schoolInput').value.trim();
+  if(!name)return;
+  currentSchool=name;
+  document.getElementById('analyzeBtn').disabled=true;
+  hide('landingPage');show('progressPage');
+  document.getElementById('progSchool').textContent=name;
 
-function selectSuggestion(name, state) {
-  document.getElementById('collegeNameInput').value = name;
-  document.getElementById('collegeSuggestions').style.display = 'none';
-  document.getElementById('searchStatus').textContent = state ? '📍 ' + state : '';
-  addCollegeByName(name, state);
-}
+  document.getElementById('progSteps').innerHTML=
+    CATS.map((c,i)=>`<div class="pstep" id="ps${i}"><div class="pdot" style="background:var(--sf3)"></div><div>${c.icon} ${c.label}</div></div>`).join('')+
+    `<div class="pstep" id="psSynth"><div class="pdot" style="background:var(--sf3)"></div><div>\uD83E\uDDE0 Synthesizing</div></div>`;
 
-function addCollegeFromSearch() {
-  const name = document.getElementById('collegeNameInput').value.trim();
-  if (!name) return;
-  const match = COLLEGE_LIST.find(c => c.name.toLowerCase() === name.toLowerCase());
-  addCollegeByName(match ? match.name : name, match ? match.state : '');
-}
+  let idx=0;
+  const iv=setInterval(()=>{
+    if(idx>0){const p=document.getElementById('ps'+(idx-1));if(p){p.style.color='var(--pos)';p.querySelector('.pdot').style.background='var(--pos)';p.querySelector('.pdot').style.animation='';}}
+    if(idx<CATS.length){const c=document.getElementById('ps'+idx);c.style.color='var(--ac)';c.querySelector('.pdot').style.background='var(--ac)';c.querySelector('.pdot').style.animation='pu 1.5s infinite';}
+    else if(idx===CATS.length){const s=document.getElementById('psSynth');s.style.color='var(--ac)';s.querySelector('.pdot').style.background='var(--ac)';}
+    idx++;
+  },2200);
 
-function addCollegeByName(name, collegeSt) {
-  document.getElementById('collegeSuggestions').style.display = 'none';
-  if (state.colleges.find(c => c.name.toLowerCase() === name.toLowerCase())) {
-    showToast(name + ' is already on your watchlist', '⚠️'); return;
-  }
-  state.colleges.push({ name, state: collegeSt, addedAt: new Date().toISOString() });
-  save(); renderSidebar(); renderStats();
-  showToast(name + ' added', '🎓');
-  document.getElementById('collegeNameInput').value = '';
-  document.getElementById('searchStatus').textContent = '';
-}
-
-// ── IMPORT INTEL FROM FILE ───────────────────────────────
-let pendingIntelItems = [];
-
-function handleImportDrop(event) {
-  event.preventDefault();
-  document.getElementById('importDropZone').style.borderColor = 'var(--border2)';
-  const file = event.dataTransfer.files[0];
-  if (file) handleImportFile(file);
-}
-
-async function handleImportFile(file) {
-  if (!file) return;
-  document.getElementById('importStatus').textContent = 'Reading file...';
-  let text = '';
-  if (file.name.endsWith('.docx')) {
-    text = await readDocx(file);
-  } else {
-    text = await readTextFile(file);
-  }
-  if (!text) { document.getElementById('importStatus').textContent = 'Could not read file.'; return; }
-  parseIntelText(text, file.name);
-}
-
-function readTextFile(file) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = e => resolve(e.target.result);
-    reader.onerror = () => resolve('');
-    reader.readAsText(file);
-  });
-}
-
-async function readDocx(file) {
-  // Use mammoth if available, otherwise read as text
-  try {
-    const arrayBuffer = await file.arrayBuffer();
-    // Try loading mammoth from CDN dynamically
-    if (typeof mammoth === 'undefined') {
-      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js');
-    }
-    const result = await mammoth.extractRawText({ arrayBuffer });
-    return result.value;
-  } catch(e) {
-    document.getElementById('importStatus').textContent = 'Could not parse .docx — try saving as .txt instead.';
-    return '';
-  }
-}
-
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = src; s.onload = resolve; s.onerror = reject;
-    document.head.appendChild(s);
-  });
-}
-
-function parseIntelText(text, filename) {
-  pendingIntelItems = [];
-
-  // Split on --- or === separators, or double newlines
-  let blocks = text.split(/\n[ \t]*(?:---+|===+)[ \t]*\n/).map(c => c.trim()).filter(c => c.length > 40);
-  if (blocks.length < 2) {
-    blocks = text.split(/\n{2,}/).map(c => c.trim()).filter(c => c.length > 40);
-  }
-
-  blocks.forEach(block => {
-    const item = parseIntelBlock(block);
-    if (item) pendingIntelItems.push(item);
-  });
-
-  // Populate college selector
-  const sel = document.getElementById('importCollegeName');
-  sel.innerHTML = '<option value="">— select a tracked college —</option>' +
-    state.colleges.map(c => '<option value="' + c.name + '">' + c.name + '</option>').join('');
-  document.getElementById('importCollegeSelect').style.display = '';
-
-  if (pendingIntelItems.length > 0) {
-    document.getElementById('importPreviewList').innerHTML =
-      pendingIntelItems.map(function(it, i) {
-        return '<div style="margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border);">' +
-          '<strong style="color:var(--text);">' + (i+1) + '. ' + it.headline + '</strong><br>' +
-          '<span style="color:var(--text3);">' + it.summary.slice(0, 100) + (it.summary.length > 100 ? '…' : '') + '</span>' +
-          '</div>';
-      }).join('');
-    document.getElementById('importPreviewCount').textContent =
-      pendingIntelItems.length + ' item' + (pendingIntelItems.length !== 1 ? 's' : '') + ' parsed from ' + filename;
-    document.getElementById('importPreview').style.display = '';
-    document.getElementById('intelImportBtn').style.display = '';
-    document.getElementById('importStatus').textContent = '';
-  } else {
-    document.getElementById('importStatus').textContent =
-      'Could not parse items. Make sure each item is separated by --- on its own line.';
-    document.getElementById('intelImportBtn').style.display = 'none';
-  }
-}
-
-function parseIntelBlock(block) {
-  var lines = block.split('\n').map(function(l) { return l.trim(); }).filter(Boolean);
-  if (!lines.length) return null;
-
-  var headline = '';
-  var summary  = '';
-  var sentiment = 'neutral';
-  var category  = 'General';
-  var sources   = [];
-
-  lines.forEach(function(line) {
-    if (/^(headline|title|#)\s*[:]\s*/i.test(line)) {
-      headline = line.replace(/^(headline|title|#)\s*[:]\s*/i, '').trim();
-    } else if (/^(summary|detail|description|body)\s*[:]\s*/i.test(line)) {
-      summary = line.replace(/^(summary|detail|description|body)\s*[:]\s*/i, '').trim();
-    } else if (/^(sentiment|tone|signal)\s*[:]\s*/i.test(line)) {
-      var val = line.replace(/^(sentiment|tone|signal)\s*[:]\s*/i, '').trim().toLowerCase();
-      if (val.indexOf('pos') !== -1) sentiment = 'positive';
-      else if (val.indexOf('neg') !== -1) sentiment = 'negative';
-      else sentiment = 'neutral';
-    } else if (/^(category|type|area)\s*[:]\s*/i.test(line)) {
-      category = line.replace(/^(category|type|area)\s*[:]\s*/i, '').trim();
-    } else if (/^(source|sources|via|from)\s*[:]\s*/i.test(line)) {
-      sources = [line.replace(/^(source|sources|via|from)\s*[:]\s*/i, '').trim()];
-    }
-  });
-
-  if (!headline) headline = lines[0].replace(/^#+\s*/, '').slice(0, 80);
-  if (!summary)  summary  = lines.slice(1).join(' ').slice(0, 400) || block.slice(0, 300);
-
-  if (headline.length < 5) return null;
-  return { headline: headline, summary: summary, sentiment: sentiment, category: category, sources: sources, confidence: 'medium', date: 'Imported' };
-}
-
-function importIntelItems() {
-  const selVal    = document.getElementById('importCollegeName').value.trim();
-  const customVal = document.getElementById('importCollegeNameCustom').value.trim();
-  const collegeName = customVal || selVal;
-
-  if (!collegeName) {
-    document.getElementById('importStatus').textContent = 'Please select or enter a college name.';
-    return;
-  }
-
-  // Add college to watchlist if not already there
-  if (!state.colleges.find(c => c.name.toLowerCase() === collegeName.toLowerCase())) {
-    state.colleges.push({ name: collegeName, state: '', addedAt: new Date().toISOString() });
-  }
-
-  const now = new Date().toISOString();
-  pendingIntelItems.forEach(item => {
-    item.college    = collegeName;
-    item.fetchedAt  = now;
-    item.isNew      = true;
-    item.bookmarked = false;
-    item.flagged    = false;
-    item.flagClient = '';
-    item.flagNote   = '';
-    item.id         = collegeName + '_import_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-  });
-
-  state.items = [...pendingIntelItems, ...state.items];
-  save(); renderStats(); renderSidebar(); renderFeed();
-  closeModal('addCollege');
-  showToast(pendingIntelItems.length + ' intel item' + (pendingIntelItems.length !== 1 ? 's' : '') + ' added for ' + collegeName, '📥');
-  pendingIntelItems = [];
-}
-
-// CSV handling
-function handleCsvDrop(event) {
-  event.preventDefault();
-  document.getElementById('csvDropZone').style.borderColor = 'var(--border2)';
-  const file = event.dataTransfer.files[0];
-  if (file) handleCsvFile(file);
-}
-
-function handleCsvFile(file) {
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (e) => parseCsv(e.target.result);
-  reader.readAsText(file);
-}
-
-function parseCsv(text) {
-  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  if (!lines.length) return;
-
-  let nameCol = -1;
-  let stateCol = -1;
-  let dataStart = 0;
-  const firstLine = lines[0].toLowerCase().split(',').map(h => h.replace(/"/g,'').trim());
-
-  // Try to detect header row
-  const nameIdx   = firstLine.findIndex(h => ['name','college','institution','school'].includes(h));
-  const stateIdx  = firstLine.findIndex(h => ['state','st','location'].includes(h));
-  if (nameIdx !== -1) { nameCol = nameIdx; stateCol = stateIdx; dataStart = 1; }
-
-  pendingCsvColleges = [];
-  for (let i = dataStart; i < lines.length; i++) {
-    const cols = lines[i].split(',').map(c => c.replace(/"/g,'').trim());
-    const name  = nameCol  >= 0 ? cols[nameCol]  : cols[0];
-    const state = stateCol >= 0 ? cols[stateCol] : (cols[1] || '');
-    if (name && name.length > 1) pendingCsvColleges.push({ name, state });
-  }
-
-  // Show preview
-  const alreadyHave = pendingCsvColleges.filter(c =>
-    state.colleges.find(e => e.name.toLowerCase() === c.name.toLowerCase())
-  ).length;
-  const newCount = pendingCsvColleges.length - alreadyHave;
-
-  document.getElementById('csvPreviewList').innerHTML =
-    pendingCsvColleges.map(c => `<div>• ${c.name}${c.state ? ' <span style="color:var(--text3);">— '+c.state+'</span>' : ''}</div>`).join('');
-  document.getElementById('csvPreviewCount').textContent =
-    pendingCsvColleges.length + ' colleges found · ' + newCount + ' new · ' + alreadyHave + ' already tracked';
-  document.getElementById('csvPreview').style.display = '';
-  document.getElementById('csvImportBtn').style.display = newCount > 0 ? '' : 'none';
-}
-
-function importFromCsv() {
-  let added = 0;
-  pendingCsvColleges.forEach(c => {
-    if (!state.colleges.find(e => e.name.toLowerCase() === c.name.toLowerCase())) {
-      state.colleges.push({ name: c.name, state: c.state || '', addedAt: new Date().toISOString() });
-      added++;
-    }
-  });
-  save(); renderSidebar(); renderStats();
-  closeModal('addCollege');
-  showToast(added + ' college' + (added !== 1 ? 's' : '') + ' added', '🎓');
-  pendingCsvColleges = [];
-}
-
-function removeCollege(name) {
-  if (!confirm('Remove ' + name + ' from watchlist?')) return;
-  state.colleges = state.colleges.filter(c => c.name !== name);
-  if (state.collegeFilter === name) state.collegeFilter = null;
-  save(); renderSidebar(); renderStats(); renderFeed();
-}
-
-// ── BOOKMARK ──────────────────────────────────────────────
-function toggleBookmark(id) {
-  const item = state.items.find(i => i.id === id); if (!item) return;
-  item.bookmarked = !item.bookmarked;
-  save(); renderStats(); renderBadges();
-  if (state.currentView === 'bookmarks') renderBookmarks(); else renderFeed();
-  showToast(item.bookmarked ? 'Bookmarked' : 'Bookmark removed', '🔖');
-}
-function clearBookmarks() {
-  if (!confirm('Clear all bookmarks?')) return;
-  state.items.forEach(i => i.bookmarked = false);
-  save(); renderStats(); renderBadges(); renderBookmarks();
-  showToast('All bookmarks cleared', '🔖');
-}
-
-// ── FLAG FOR CLIENT ───────────────────────────────────────
-function startFlag(id) {
-  const item = state.items.find(i => i.id === id); if (!item) return;
-  if (item.flagged) {
-    item.flagged = false; item.flagClient = ''; item.flagNote = '';
-    save(); renderStats(); renderBadges(); renderFeed();
-    if (state.currentView === 'flagged') renderFlagged();
-    showToast('Flag removed', '🚩'); return;
-  }
-  state.pendingFlagItemId = id;
-  document.getElementById('flagItemTitle').textContent = '"' + item.headline + '"';
-  document.getElementById('flagClientName').value = '';
-  document.getElementById('flagNote').value = '';
-  openModal('flagClient');
-}
-function confirmFlag() {
-  const id   = state.pendingFlagItemId;
-  const item = state.items.find(i => i.id === id); if (!item) return;
-  item.flagged    = true;
-  item.flagClient = document.getElementById('flagClientName').value.trim() || 'Unassigned';
-  item.flagNote   = document.getElementById('flagNote').value.trim();
-  save(); closeModal('flagClient');
-  renderStats(); renderBadges(); renderFeed();
-  if (state.currentView === 'flagged') renderFlagged();
-  showToast('Flagged for ' + item.flagClient, '🚩');
-}
-function clearFlags() {
-  if (!confirm('Clear all flags?')) return;
-  state.items.forEach(i => { i.flagged = false; i.flagClient = ''; i.flagNote = ''; });
-  save(); renderStats(); renderBadges(); renderFlagged();
-  showToast('All flags cleared', '🚩');
-}
-
-// ── FILTERS ───────────────────────────────────────────────
-function setSentimentFilter(val, el) {
-  state.sentimentFilter = val;
-  document.querySelectorAll('[data-sentiment]').forEach(e => e.classList.remove('active'));
-  el.classList.add('active'); renderFeed();
-}
-function setCollegeFilter(name) {
-  state.collegeFilter = state.collegeFilter === name ? null : name;
-  renderSidebar(); renderFeed();
-  document.getElementById('feedTitle').textContent = state.collegeFilter
-    ? 'Intel: ' + state.collegeFilter : 'Intelligence Feed';
-}
-function setCategoryFilter(cat) {
-  state.categoryFilter = state.categoryFilter === cat ? null : cat;
-  renderTagFilters(); renderFeed();
-}
-
-// ── RENDER SIDEBAR ────────────────────────────────────────
-function renderSidebar() {
-  const list = document.getElementById('collegeList');
-  if (!state.colleges.length) {
-    list.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:6px 10px;">No colleges yet.</div>';
-  } else {
-    list.innerHTML = state.colleges.map(c => {
-      const hasNeg = state.items.some(i => i.college === c.name && i.sentiment === 'negative');
-      const count  = state.items.filter(i => i.college === c.name).length;
-      const active = state.collegeFilter === c.name;
-      const esc    = c.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      return `<div class="college-item ${active?'active':''}" onclick="setCollegeFilter('${esc}')">
-        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.name}</span>
-        <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;">
-          ${count ? `<span style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;">${count}</span>` : ''}
-          ${hasNeg ? `<div style="width:5px;height:5px;border-radius:50%;background:var(--red);box-shadow:0 0 5px var(--red);"></div>` : ''}
-          <span onclick="event.stopPropagation();removeCollege('${esc}')"
-                style="color:var(--text3);font-size:10px;cursor:pointer;opacity:0.4;">✕</span>
-        </div>
-      </div>`;
-    }).join('');
-  }
-  renderTagFilters();
-}
-function renderTagFilters() {
-  const used = [...new Set(state.items.map(i => i.category).filter(Boolean))];
-  document.getElementById('tagFilters').innerHTML = used.length
-    ? used.map(cat => `<div class="tag-btn ${state.categoryFilter===cat?'active':''}" onclick="setCategoryFilter('${cat}')">${cat}</div>`).join('')
-    : '<span style="font-size:11px;color:var(--text3);">After first refresh</span>';
-}
-
-// ── RENDER STATS ──────────────────────────────────────────
-function renderStats() {
-  const it = state.items;
-  document.getElementById('statTotal').textContent = it.length;
-  document.getElementById('statPos').textContent   = it.filter(i => i.sentiment==='positive').length;
-  document.getElementById('statNeg').textContent   = it.filter(i => i.sentiment==='negative').length;
-  document.getElementById('statBook').textContent  = it.filter(i => i.bookmarked).length;
-  document.getElementById('statFlag').textContent  = it.filter(i => i.flagged).length;
-  document.getElementById('countAll').textContent      = it.length;
-  document.getElementById('countPositive').textContent = it.filter(i=>i.sentiment==='positive').length;
-  document.getElementById('countNegative').textContent = it.filter(i=>i.sentiment==='negative').length;
-  document.getElementById('countNeutral').textContent  = it.filter(i=>i.sentiment==='neutral').length;
-  if (state.lastUpdated) {
-    const d = new Date(state.lastUpdated);
-    document.getElementById('lastUpdatedLabel').textContent =
-      'Updated: ' + d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-  }
-  renderBadges();
-}
-function renderBadges() {
-  const bc = state.items.filter(i => i.bookmarked).length;
-  const fc = state.items.filter(i => i.flagged).length;
-  const bb = document.getElementById('bookmarkBadge');
-  const fb = document.getElementById('flagBadge');
-  bb.textContent = bc; bb.style.display = bc > 0 ? '' : 'none';
-  fb.textContent = fc; fb.style.display = fc > 0 ? '' : 'none';
-}
-
-// ── BUILD CARD ────────────────────────────────────────────
-function buildCard(item, idx) {
-  const date    = new Date(item.fetchedAt);
-  const dateStr = date.toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'});
-  const sources = item.sources || [];
-  return `<div class="intel-card ${item.flagged?'flagged-card':''} ${item.bookmarked?'bookmarked-card':''} ${item.isNew?'new-item':''}"
-               style="animation-delay:${idx*0.035}s">
-    <div class="card-stripe ${item.sentiment}"></div>
-    <div class="card-body">
-      <div class="card-top">
-        <div style="min-width:0;">
-          <div class="card-college">${item.college}</div>
-          <div class="card-title">${item.headline}</div>
-        </div>
-        <div class="card-meta">
-          ${item.flagged ? `<span class="flag-pill">🚩 ${item.flagClient||'Flagged'}</span>` : ''}
-          <span class="badge ${item.sentiment}">${
-            item.sentiment==='positive' ? '↑ Positive' :
-            item.sentiment==='negative' ? '↓ Negative' : '→ Notable'}</span>
-          <span class="category-tag">${item.category||'General'}</span>
-        </div>
-      </div>
-      <div class="card-summary">${item.summary}</div>
-      ${item.flagNote ? `<div class="card-flag-note">💬 ${item.flagNote}</div>` : ''}
-      <div class="card-footer">
-        <div class="card-footer-left">
-          <div class="card-date">📅 ${item.date ? item.date : dateStr}</div>
-          ${sources.length ? `<div class="card-sources">${sources.map(s=>`<span class="source-tag">${s}</span>`).join('')}</div>` : ''}
-        </div>
-        <div class="card-actions">
-          <div class="icon-btn ${item.bookmarked?'active-bookmark':''}"
-               onclick="toggleBookmark('${item.id}')"
-               title="${item.bookmarked?'Remove bookmark':'Bookmark'}">🔖</div>
-          <div class="icon-btn ${item.flagged?'active-flag':''}"
-               onclick="startFlag('${item.id}')"
-               title="${item.flagged?'Remove flag':'Flag for client'}">🚩</div>
-        </div>
-      </div>
-    </div>
-  </div>`;
-}
-
-// ── RENDER FEED ───────────────────────────────────────────
-function renderFeed() {
-  const search = document.getElementById('searchInput').value.toLowerCase();
-  const sort   = document.getElementById('sortSelect').value;
-  let items = [...state.items];
-  if (state.sentimentFilter !== 'all') items = items.filter(i => i.sentiment === state.sentimentFilter);
-  if (state.collegeFilter)  items = items.filter(i => i.college === state.collegeFilter);
-  if (state.categoryFilter) items = items.filter(i => i.category === state.categoryFilter);
-  if (search) items = items.filter(i =>
-    i.headline.toLowerCase().includes(search) ||
-    i.summary.toLowerCase().includes(search)  ||
-    i.college.toLowerCase().includes(search)
-  );
-  if (sort === 'newest')    items.sort((a,b) => new Date(b.fetchedAt) - new Date(a.fetchedAt));
-  if (sort === 'oldest')    items.sort((a,b) => new Date(a.fetchedAt) - new Date(b.fetchedAt));
-  if (sort === 'college')   items.sort((a,b) => a.college.localeCompare(b.college));
-  if (sort === 'sentiment') {
-    const o = {negative:0, positive:1, neutral:2};
-    items.sort((a,b) => (o[a.sentiment]??3) - (o[b.sentiment]??3));
-  }
-  const c = document.getElementById('feedContainer');
-  if (!items.length) {
-    c.innerHTML = `<div class="empty-state">
-      <div class="empty-icon">🔭</div>
-      <div class="empty-title">${state.items.length === 0 ? 'No intelligence gathered yet' : 'No items match your filters'}</div>
-      <div class="empty-sub">${state.items.length === 0 ? "Click 'Refresh All' to pull today's news." : 'Try adjusting your filters.'}</div>
-    </div>`;
-    return;
-  }
-  c.innerHTML = items.map((item, idx) => buildCard(item, idx)).join('');
-}
-
-// ── RENDER BOOKMARKS ──────────────────────────────────────
-function renderBookmarks() {
-  const items = state.items.filter(i => i.bookmarked);
-  const c = document.getElementById('bookmarkContainer');
-  c.innerHTML = items.length
-    ? items.map((it,idx) => buildCard(it,idx)).join('')
-    : '<div class="empty-state"><div class="empty-icon">🔖</div><div class="empty-title">No bookmarks yet</div><div class="empty-sub">Click the 🔖 icon on any card.</div></div>';
-}
-
-// ── RENDER FLAGGED ────────────────────────────────────────
-function renderFlagged() {
-  const items = state.items.filter(i => i.flagged);
-  const c = document.getElementById('flaggedContainer');
-  if (!items.length) {
-    c.innerHTML = '<div class="empty-state"><div class="empty-icon">🚩</div><div class="empty-title">Nothing flagged yet</div><div class="empty-sub">Click the 🚩 icon on any card to flag it for a client.</div></div>';
-    return;
-  }
-  const byClient = {};
-  items.forEach(i => {
-    const k = i.flagClient || 'Unassigned';
-    if (!byClient[k]) byClient[k] = [];
-    byClient[k].push(i);
-  });
-  c.innerHTML = Object.entries(byClient).map(([client, ci]) => `
-    <div style="margin-bottom:1.2rem;">
-      <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--purple);
-                  margin-bottom:0.6rem;padding-bottom:0.4rem;border-bottom:1px solid rgba(180,110,245,0.2);">
-        🚩 ${client} <span style="color:var(--text3);font-weight:400;">(${ci.length} item${ci.length!==1?'s':''})</span>
-      </div>
-      ${ci.map((it,idx) => buildCard(it,idx)).join('')}
-    </div>
-  `).join('');
-}
-
-// ── EMAIL DIGEST ──────────────────────────────────────────
-function generateDigest() {
-  const scope = document.getElementById('digestScope').value;
-  const intro = document.getElementById('digestIntro').value.trim();
-  const today = new Date().toLocaleDateString('en-US', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  let items = [...state.items];
-  const todayStr = new Date().toDateString();
-  if (scope === 'all')       items = items.filter(i => new Date(i.fetchedAt).toDateString() === todayStr);
-  else if (scope === 'flagged')    items = items.filter(i => i.flagged);
-  else if (scope === 'bookmarked') items = items.filter(i => i.bookmarked);
-  else if (scope === 'negative')   items = items.filter(i => i.sentiment === 'negative');
-  if (!items.length) { showToast('No items match this scope', '⚠️'); return; }
-  items.sort((a,b) => a.college.localeCompare(b.college));
-  const scopeLabel = {all:'Full Daily Intel',flagged:'Flagged for Clients',bookmarked:'Bookmarked Items',negative:'Negative Signals'}[scope];
-  const subj    = document.getElementById('digestSubject').value || 'College Intel';
-  const subject = subj + ' — ' + today;
-  let text = subject + '\n' + '═'.repeat(Math.min(subject.length, 60)) + '\n\n';
-  if (intro) text += intro + '\n\n' + '─'.repeat(50) + '\n\n';
-  text += 'Scope: ' + scopeLabel + ' · ' + items.length + ' item' + (items.length!==1?'s':'') +
-          ' · Generated ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + '\n\n';
-  const byCollege = {};
-  items.forEach(i => { if(!byCollege[i.college]) byCollege[i.college]=[]; byCollege[i.college].push(i); });
-  Object.entries(byCollege).forEach(([college, ci]) => {
-    text += '▌ ' + college.toUpperCase() + '\n' + '─'.repeat(44) + '\n';
-    ci.forEach(item => {
-      const si = item.sentiment==='positive'?'↑':item.sentiment==='negative'?'↓':'→';
-      const d  = new Date(item.fetchedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'});
-      text += '\n' + si + ' [' + (item.category||'General') + ']  ' + item.headline + '\n';
-      text += '   ' + item.summary.replace(/\n/g,' ') + '\n';
-      if (item.flagged && item.flagClient)
-        text += '   🚩 Flagged for: ' + item.flagClient + (item.flagNote ? ' — '+item.flagNote : '') + '\n';
-      if (item.sources && item.sources.length)
-        text += '   Sources: ' + item.sources.join(', ') + '\n';
-      text += '   Date: ' + d + '\n';
+  try{
+    const resp=await fetch('/.netlify/functions/analyze',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({school:name})
     });
-    text += '\n';
+    const result=await resp.json();
+    if(result.error)throw new Error(result.error);
+
+    currentRaw=result.raw;
+    clearInterval(iv);
+    CATS.forEach((_,i)=>{const p=document.getElementById('ps'+i);p.style.color='var(--pos)';p.querySelector('.pdot').style.background='var(--pos)';p.querySelector('.pdot').style.animation='';});
+    const sy=document.getElementById('psSynth');sy.style.color='var(--pos)';sy.querySelector('.pdot').style.background='var(--pos)';
+
+    let data;
+    try{data=JSON.parse(currentRaw.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim());}
+    catch{const m=currentRaw.match(/\{[\s\S]*\}/);if(m)data=JSON.parse(m[0]);else throw new Error('Could not parse AI response');}
+
+    currentData=data;
+    setTimeout(()=>{hide('progressPage');renderScorecard(data);show('scorecardPage');},600);
+  }catch(err){
+    clearInterval(iv);
+    flash('Error: '+err.message);
+    setTimeout(()=>{hide('progressPage');show('landingPage');document.getElementById('analyzeBtn').disabled=false;},2000);
+  }
+}
+
+function goBack(){hide('scorecardPage');show('landingPage');document.getElementById('schoolInput').value='';document.getElementById('analyzeBtn').disabled=false;currentData=null;}
+
+/* ═══ RENDER SCORECARD ═══ */
+function renderScorecard(data){
+  const sig=data.overall_signal||'unclear',sc=SM[sig]||'unc',col=SCOL[sc],cats=data.categories||{};
+  document.getElementById('scName').textContent=data.school||currentSchool;
+  const bgMap={pos:'var(--posbg)',neg:'var(--negbg)',mix:'var(--mixbg)',unc:'var(--uncbg)'};
+  const bdMap={pos:'var(--posbd)',neg:'var(--negbd)',mix:'var(--mixbd)',unc:'var(--uncbd)'};
+
+  let catCards='';
+  CATS.forEach(cat=>{
+    const cd=cats[cat.id]||{signal:'none',findings:['No data']};
+    const cs=cd.signal||'none',csc=SM[cs]||'none',cc=SCOL[csc]||'#252a3a';
+    const findings=(cd.findings||[]).map(f=>`<div class="finding"><div class="fdot" style="background:${csc!=='none'?cc:'var(--t3)'}"></div><div>${h(f)}</div></div>`).join('');
+    catCards+=`<div class="cat-card" style="border-left:3px solid ${cc}"><div class="cat-top"><span style="font-size:16px">${cat.icon}</span><span class="cat-lbl">${cat.label}</span><span class="cat-pill" style="color:${csc!=='none'?cc:'var(--t3)'};background:${csc!=='none'?cc+'18':'var(--sf2)'}">${cs==='none'?'no signal':cs}</span></div><div>${findings}</div></div>`;
   });
-  text += '\n' + '═'.repeat(50) + '\nGenerated by College Intelligence Hub · ' + new Date().toLocaleString() + '\n';
-  state.lastDigestText = text;
-  document.getElementById('digestPreviewText').textContent = text;
-  document.getElementById('digestPreviewArea').style.display = 'block';
-  document.getElementById('emailSubject').value = subject;
-  document.getElementById('emailBody').textContent = text;
-}
-function copyDigest() {
-  navigator.clipboard.writeText(state.lastDigestText).then(() => {
-    const f = document.getElementById('copyFlash');
-    f.classList.add('show'); setTimeout(() => f.classList.remove('show'), 2000);
-  });
-}
-function openDigestModal(mode) {
-  if (mode === 'flagged') { document.getElementById('digestScope').value = 'flagged'; generateDigest(); }
-  if (!state.lastDigestText) { showToast('Generate a digest first', '⚠️'); return; }
-  openModal('emailDraft');
-}
-function copyEmailBody() { navigator.clipboard.writeText(state.lastDigestText).then(() => showToast('Email body copied!', '📋')); }
-function openMailto() {
-  const to   = document.getElementById('emailTo').value || '';
-  const subj = encodeURIComponent(document.getElementById('emailSubject').value || 'College Intel Digest');
-  const body = encodeURIComponent(state.lastDigestText.slice(0, 1800));
-  window.open('mailto:' + to + '?subject=' + subj + '&body=' + body);
-}
 
-// ── REFRESH ───────────────────────────────────────────────
-async function runDailyRefresh() {
-  if (!state.colleges.length) { alert('Add at least one college first.'); return; }
-  const btn = document.getElementById('refreshBtn');
-  btn.disabled = true; btn.textContent = '⟳ Refreshing...';
+  let followHtml='';
+  if(data.follow_up_searches&&data.follow_up_searches.length)
+    followHtml=`<div class="fu-section"><h3>Recommended Follow-Up Searches</h3>${data.follow_up_searches.map(s=>`<div class="fu-item">${h(s)}</div>`).join('')}</div>`;
 
-  // Switch to feed view
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('view-feed').classList.add('active');
-  document.querySelector('.nav-tab').classList.add('active');
-  state.currentView = 'feed';
-
-  document.getElementById('feedContainer').innerHTML = `<div class="loading-state">
-    <div class="spinner"></div>
-    <div class="loading-text" id="loadingText">Initializing intelligence sweep...</div>
-    <div style="width:240px;">
-      <div class="refresh-progress" id="progressLabel">Preparing</div>
-      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:5%"></div></div>
+  document.getElementById('scBody').innerHTML=`
+    <div class="banner" style="border-color:${bdMap[sc]};background:${bgMap[sc]}">
+      <div class="meta-line">
+        <span class="sig-badge" style="color:${col};background:${col}20">${sig}</span>
+        <span class="meta-tag">Strength: ${data.signal_strength||'\u2014'}</span>
+        <span class="meta-tag">Confidence: ${data.confidence||'\u2014'}</span>
+        <span class="meta-tag">Generated: ${new Date().toLocaleDateString()}</span>
+      </div>
+      <div style="font-size:14px;line-height:1.7;color:var(--t2);font-weight:300">${h(data.summary||'')}</div>
+      ${data.why_it_matters?`<div style="margin-top:10px;font-size:13px;line-height:1.7;color:var(--t3);font-style:italic">${h(data.why_it_matters)}</div>`:''}
     </div>
-  </div>`;
-
-  const newItems = [];
-  for (let i = 0; i < state.colleges.length; i++) {
-    const college = state.colleges[i];
-    document.getElementById('loadingText').textContent  = 'Searching: ' + college.name;
-    document.getElementById('progressLabel').textContent = (i+1) + ' of ' + state.colleges.length + ' colleges';
-    document.getElementById('progressFill').style.width  = Math.max(5, Math.round(((i+1)/state.colleges.length)*100)) + '%';
-    try {
-      const items = await fetchIntel(college.name, college.state || '');
-      items.forEach(item => {
-        item.college    = college.name;
-        item.fetchedAt  = new Date().toISOString();
-        item.isNew      = true;
-        item.bookmarked = false;
-        item.flagged    = false;
-        item.flagClient = '';
-        item.flagNote   = '';
-        item.id         = college.name + '_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-      });
-      newItems.push(...items);
-    } catch(e) {
-      console.error('Error for', college.name, e.message);
-      showToast('⚠️ ' + college.name + ': ' + e.message.slice(0, 60), '⚠️');
-    }
-  }
-
-  state.items.forEach(i => i.isNew = false);
-  const todayStr = new Date().toDateString();
-  // Replace today's items for colleges we just fetched
-  const fetchedColleges = new Set(newItems.map(i => i.college));
-  state.items = state.items.filter(i =>
-    new Date(i.fetchedAt).toDateString() !== todayStr || !fetchedColleges.has(i.college)
-  );
-  state.items = [...newItems, ...state.items];
-  state.lastUpdated = new Date().toISOString();
-
-  save();
-  btn.disabled = false; btn.textContent = '⟳ Refresh All';
-  renderStats(); renderSidebar(); renderFeed();
-  showToast('Refreshed ' + state.colleges.length + ' college' + (state.colleges.length!==1?'s':''), '✓');
+    <div class="cat-grid">${catCards}</div>
+    ${followHtml}
+    <div class="raw-section">
+      <button class="raw-toggle" onclick="toggleRaw()">&#9656; Show raw AI response</button>
+      <div class="raw-body" id="rawBody">${h(currentRaw)}</div>
+    </div>`;
 }
 
-// ── FETCH INTEL (calls our Netlify proxy) ─────────────────
-async function fetchIntel(collegeName, collegeState) {
-  const response = await fetch('/api/intel', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ college: collegeName, state: collegeState })
-  });
+function toggleRaw(){const el=document.getElementById('rawBody');el.classList.toggle('open');el.previousElementSibling.textContent=el.classList.contains('open')?'\u25BE Hide raw AI response':'\u25B8 Show raw AI response';}
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.error || 'Server error ' + response.status);
-  }
-
-  if (!Array.isArray(data.items)) {
-    throw new Error('Unexpected response shape from /api/intel');
-  }
-
-  return data.items;
+/* ═══ PDF GENERATOR — pure JS, zero dependencies ═══ */
+function generatePDF(data){
+  const school=data.school||'University',sig=data.overall_signal||'unclear',strength=data.signal_strength||'unknown',confidence=data.confidence||'unknown';
+  const summary=data.summary||'',wim=data.why_it_matters||'',cats=data.categories||{},follows=data.follow_up_searches||[];
+  const dateStr=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const sigCol={positive:'#2dbe7b',negative:'#e05555',mixed:'#d4a030',unclear:'#7e88a4'};
+  const sigBg2={positive:'#0a1a10',negative:'#1a0a0a',mixed:'#1a150a',unclear:'#12141a'};
+  function esc(s){return s.replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)');}
+  function wrap(t,mx){const w=t.split(' '),l=[];let ln='';for(const x of w){if((ln+' '+x).trim().length>mx&&ln){l.push(ln.trim());ln=x;}else{ln=ln?ln+' '+x:x;}}if(ln.trim())l.push(ln.trim());return l;}
+  function rgb(hex){return`${(parseInt(hex.slice(1,3),16)/255).toFixed(3)} ${(parseInt(hex.slice(3,5),16)/255).toFixed(3)} ${(parseInt(hex.slice(5,7),16)/255).toFixed(3)}`;}
+  const W=612,H=792,M=54,TW=W-2*M;let pages=[],cur=[],y=H;
+  function np(){if(cur.length)pages.push(cur.join('\n'));cur=[];y=H;cur.push(rgb('#08090c')+' rg');cur.push(`0 0 ${W} ${H} re f`);}
+  function ft(){cur.push(rgb('#0f1118')+' rg');cur.push(`0 0 ${W} 24 re f`);cur.push('BT /F1 6 Tf');cur.push(rgb('#545c74')+' rg');cur.push(`${W/2-130} 8 Td (University Signal Intelligence  |  AI-Generated  |  Verify All Findings) Tj ET`);}
+  function cp(n){if(y-n<50){ft();np();y=H-M;}}
+  function tx(x,yy,f,sz,col,t){cur.push(`BT /F${f} ${sz} Tf ${rgb(col)} rg ${x} ${yy} Td (${esc(t)}) Tj ET`);}
+  function bx(x,yy,w2,h2,col){cur.push(`${rgb(col)} rg ${x} ${yy} ${w2} ${h2} re f`);}
+  np();
+  bx(0,H-32,W,32,'#0f1118');tx(M,H-22,2,7,'#545c74','UNIVERSITY SIGNAL INTELLIGENCE');tx(W-M-190,H-22,1,7,'#545c74','CONFIDENTIAL BRIEFING  |  '+dateStr);y=H-52;
+  for(const ln of wrap(school,42)){cp(28);tx(M,y,2,24,'#e4e8f4',ln);y-=28;}
+  y+=4;tx(M,y,1,9,'#545c74','U.S. News Top 250  |  Signal Scorecard');y-=18;
+  cur.push(`0.165 0.188 0.227 RG 0.5 w ${M} ${y} m ${W-M} ${y} l S`);y-=16;
+  const sl=wrap(summary,85),wl=wim?wrap(wim,90):[];const bh=38+sl.length*14+(wl.length?wl.length*12+18:0);
+  cp(bh+10);bx(M,y-bh,TW,bh,sigBg2[sig]||'#12141a');bx(M+10,y-19,65,14,sigCol[sig]||'#7e88a4');
+  tx(M+16,y-16,2,8,'#08090c',sig.toUpperCase());tx(M+80,y-15,1,7,'#545c74',`STRENGTH: ${strength.toUpperCase()}   |   CONFIDENCE: ${confidence.toUpperCase()}`);
+  let sy2=y-34;for(const ln of sl){tx(M+10,sy2,1,10,'#8b93ad',ln);sy2-=14;}
+  if(wl.length){sy2-=6;tx(M+10,sy2,2,7,'#5b8def','WHY IT MATTERS');sy2-=14;for(const ln of wl){tx(M+10,sy2,3,9,'#6b7394',ln);sy2-=12;}}
+  y-=bh+14;cp(18);tx(M,y,2,8,'#5b8def','SIGNAL CATEGORIES');y-=14;
+  for(const cat of CATS){const cd=cats[cat.id]||{signal:'none',findings:['No significant developments found']};const cs=cd.signal||'none',findings=cd.findings||[],barC=sigCol[cs]||'#252a3a';
+    let ch=22;for(const f of findings){ch+=wrap(f,80).length*11;}ch=Math.max(ch,28)+4;cp(ch+6);bx(M,y-ch,TW,ch,'#0f1118');bx(M,y-ch,2.5,ch,barC);
+    tx(M+10,y-13,2,7.5,'#e4e8f4',cat.label.toUpperCase());tx(W-M-60,y-12,2,6.5,sigCol[cs]||'#545c74',cs==='none'?'NO SIGNAL':cs.toUpperCase());
+    let fy=y-26;for(const f of findings){cur.push(`${rgb(sigCol[cs]||'#545c74')} rg ${M+12} ${fy+1.5} 3 3 re f`);for(const fl of wrap(f,80)){tx(M+20,fy,1,8.5,'#8b93ad',fl);fy-=11;}}y-=ch+5;}
+  if(follows.length){cp(18+follows.length*13);y-=4;cur.push(`0.165 0.188 0.227 RG ${M} ${y} m ${W-M} ${y} l S`);y-=16;
+    tx(M,y,2,8,'#5b8def','RECOMMENDED FOLLOW-UP SEARCHES');y-=14;for(const s of follows){cp(13);tx(M+8,y,4,8,'#8b93ad','-> '+s);y-=13;}}
+  cp(40);y-=8;cur.push(`0.165 0.188 0.227 RG ${M} ${y} m ${W-M} ${y} l S`);y-=14;
+  for(const ln of wrap('This report was generated by AI using automated web search. All findings should be independently verified. This document is for analytical purposes only.',100)){tx(M,y,3,6.5,'#3d4460',ln);y-=9;}
+  ft();pages.push(cur.join('\n'));
+  const np2=pages.length,kids=[];for(let i=0;i<np2;i++)kids.push(`${8+i*2} 0 R`);
+  let pdf='%PDF-1.4\n';const off=[];
+  function wo(n,c){off.push(pdf.length);pdf+=`${n} 0 obj\n${c}\nendobj\n`;}
+  wo(1,'<< /Type /Catalog /Pages 2 0 R >>');wo(2,`<< /Type /Pages /Kids [${kids.join(' ')}] /Count ${np2} >>`);
+  wo(3,'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');wo(4,'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>');
+  wo(5,'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique >>');wo(6,'<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>');
+  const fr='/F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R';
+  for(let i=0;i<np2;i++){const sn=7+i*2,pn=8+i*2,c=pages[i];wo(sn,`<< /Length ${c.length} >>\nstream\n${c}\nendstream`);wo(pn,`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Contents ${sn} 0 R /Resources << /Font << ${fr} >> >> >>`);}
+  const xr=pdf.length;pdf+=`xref\n0 ${off.length+1}\n0000000000 65535 f \n`;for(const o of off)pdf+=`${String(o).padStart(10,'0')} 00000 n \n`;
+  pdf+=`trailer\n<< /Size ${off.length+1} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`;return pdf;
 }
 
-// ── INIT ──────────────────────────────────────────────────
-function init() {
-  load();
-  renderStats(); renderSidebar(); renderFeed();
+function exportPDF(){
+  if(!currentData){flash('No analysis to export');return;}
+  try{const pdfStr=generatePDF(currentData);const bytes=new Uint8Array(pdfStr.length);for(let i=0;i<pdfStr.length;i++)bytes[i]=pdfStr.charCodeAt(i)&0xff;
+    const blob=new Blob([bytes],{type:'application/pdf'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;
+    const safe=(currentData.school||'University').replace(/[^a-zA-Z0-9 ]/g,'').replace(/\s+/g,'_').substring(0,40);
+    a.download=`Signal_Scorecard_${safe}.pdf`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);flash('PDF downloaded');
+  }catch(e){flash('PDF error: '+e.message);}
 }
-
-init();
 </script>
 </body>
 </html>
